@@ -1,0 +1,108 @@
+{
+  "services": [
+    {
+      "name": "Facebook",
+      "actions" : [
+        {
+          "name": "new_message_in_group",
+          "description": "A new message is posted in a group",
+          "variables": [
+            {
+              "name": "group_name",
+              "description": "The name of the group"
+            },
+            {
+              "name": "group_id",
+              "description": "The id of the group"
+            },
+            {
+              "name": "message",
+              "description": "The message"
+            }
+          ]
+        },
+        {
+          "name": "new_message_in_inbox",
+          "description": "A new private message is received by the user",
+          "variables": [
+            {
+              "name": "message",
+              "description": "The message"
+            },
+            {
+              "name": "sender",
+              "description": "The user who sent the message"
+            }
+          ]
+        },
+        {
+          "name": "new_like,",
+          "description": "The user gains a like from one of their messages",
+          "variables": [
+            {
+              "name": "message",
+              "description": "The message"
+            },
+            {
+              "name": "sender",
+              "description": "The user who sent the message"
+            }
+          ]
+        }
+      ],
+      "reactions": [
+        {
+          "name": "like_message",
+          "description": "The user likes a message",
+          "params": [
+            {
+              "name": "message_id",
+              "description": "The id of the message"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Intra",
+      "actions": [
+        {
+          "name": "new_project_subscription",
+          "description": "The user sign up for a project",
+          "variables": [
+            {
+              "name": "project_name",
+              "description": "The name of the project"
+            },
+            {
+              "name": "project_id",
+              "description": "The id of the project"
+            }
+          ]
+        }
+      ],
+      "reactions": [
+        {
+          "name": "activity_subscribe",
+          "description": "The user sign up for an activity",
+          "params": [
+            {
+              "name": "activity_id",
+              "description": "The id of the activity"
+            }
+          ]
+        },
+        {
+          "name": "module_subscribe",
+          "description": "The user sign up for a module",
+          "params": [
+            {
+              "name": "module_id",
+              "description": "The id of the module"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

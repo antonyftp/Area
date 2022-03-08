@@ -1,0 +1,10 @@
+{
+  "installed":
+  {
+    "client_id":"1059995982564-7p41gmu31i6nsis9s5hhgum8tr4kfimf.apps.googleusercontent.com",
+    "project_id":"areaepitech-341013","auth_uri":"https://accounts.google.com/o/oauth2/auth",
+    "token_uri":"https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
+    "redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]
+  }
+}

@@ -1,0 +1,255 @@
+[
+    {
+        "Name": "Gmail",
+        "Actions": [{
+            "Name": "OnEmail",
+            "Description": "Trigger when the user receive an email",
+            "Variables": [
+                {"Name": "Subject", "Type": "string", "Description": "Subject of the email"}
+            ]
+        }],
+        "Reactions": [{
+            "Name": "SendEmail",
+            "Description": "Send an email",
+            "Params": [
+                {"Name": "Receiver", "Type": "string", "Description": "Email address of the reciever"},
+                {"Name": "Object", "Type": "string", "Description": "Object of the email"},
+                {"Name": "Content", "Type": "string", "Description": "Content of the email"}
+            ]
+        }]
+    },
+    {
+        "Name": "Github",
+        "Actions": [{
+            "Name": "OnPush",
+            "Description": "Trigger when a push in made on a repository with yout account",
+            "Params": [
+                {"Name": "Repository", "Type": "string", "Description": "Repository that will be triggered by this event"}
+            ],
+            "Variables": [
+                {"Name": "Author", "Type": "string", "Description": "Author of the commit"},
+                {"Name": "Commit", "Type": "string", "Description": "Description of the commit"}
+            ]
+        }, {
+            "Name": "OnPullRequest",
+            "Description": "Trigger when a pull request in made on a repository with yout account",
+            "Params": [
+                {"Name": "Repository", "Type": "string", "Description": "Repository that will be triggered by this event"}
+            ],
+            "Variables": []
+        }, {
+            "Name": "OnWorkflow",
+            "Description": "Trigger workflow  event made on a repository with yout account",
+            "Params": [
+                {"Name": "Repository", "Type": "string", "Description": "Repository that will be triggered by this event"}
+            ],
+            "Variables": []
+        }],
+        "Reactions": [{
+            "Name": "CreateIssue",
+            "Description": "Create an issue",
+            "Params": [
+                {"Name": "Repository", "Type": "string", "Description": "Repository that will be triggered by this event"},
+                {"Name": "Title", "Type": "string", "Description": "Title of the issue"},
+            ],
+            "Variables": []
+        },
+            {
+                "Name": "CreateIPullRequest",
+                "Description": "Create a pull request",
+                "Params": [
+                    {"Name": "Repository", "Type": "string", "Description": "Repository that will be triggered by this event"},
+                    {"Name": "Title", "Type": "string", "Description": "Title of the pull request"},
+                    {"Name": "Body", "Type": "string", "Description": "Body of the pull request"},
+                    {"Name": "Head", "Type": "string", "Description": "Head branch"},
+                    {"Name": "BaseRef", "Type": "string", "Description": "BaseRef branch"}
+                ],
+                "Variables": []
+            }]
+    },
+    {
+        "Name": "Weather",
+        "Actions": [{
+            "Name": "TemperatureAboveValue",
+            "Description": "Trigger when the temperature is above a value",
+            "Params": [
+                {"Name": "City", "Type": "string", "Description": "City where the temperature is measured"},
+                {"Name": "Value", "Type": "number", "Description": "Value that the temperature must be above"}
+            ],
+            "Variables": []
+        },
+            {
+                "Name": "TemperatureBelowValue",
+                "Description": "Trigger when the temperature is below a value",
+                "Params": [
+                    {"Name": "City", "Type": "string", "Description": "City where the temperature is measured"},
+                    {"Name": "Value", "Type": "number", "Description": "Value that the temperature must be below"}
+                ],
+                "Variables": []
+            },
+            {
+                "Name": "WeatherSunny",
+                "Description": "Trigger when the weather is sunny",
+                "Params": [
+                    {"Name": "City", "Type": "string", "Description": "City where the weather is measured"}
+                ],
+                "Variables": []
+            },
+            {
+                "Name": "WeatherRainy",
+                "Description": "Trigger when the weather is rainy",
+                "Params": [
+                    {"Name": "City", "Type": "string", "Description": "City where the weather is measured"}
+                ],
+                "Variables": []
+            },
+            {
+                "Name": "AirQualityAboveValue",
+                "Description": "Trigger when the air quality is above a value",
+                "Params": [
+                    {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
+                    {"Name": "Value", "Type": "number", "Description": "Value that the air quality must be above"}
+                ],
+                "Variables": []
+            },
+            {
+                "Name": "AirQualityBelowValue",
+                "Description": "Trigger when the air quality is below a value",
+                "Params": [
+                    {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
+                    {"Name": "Value", "Type": "number", "Description": "Value that the air quality must be below"}
+                ],
+                "Variables": []
+            },
+            {
+                "Name": "UVIndexAboveValue",
+                "Description": "Trigger when the UV index is above a value",
+                "Params": [
+                    {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
+                    {"Name": "Value", "Type": "number", "Description": "Value that the UV index must be above"}
+                ],
+                "Variables": []
+            },
+            {
+                "Name": "UVIndexBelowValue",
+                "Description": "Trigger when the UV index is below a value",
+                "Params": [
+                    {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
+                    {"Name": "Value", "Type": "number", "Description": "Value that the UV index must be below"}
+                ],
+                "Variables": []
+            },
+            {
+                "Name": "CloudCoverAboveValue",
+                "Description": "Trigger when the cloud cover is above a value",
+                "Params": [
+                    {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
+                    {"Name": "Value", "Type": "number", "Description": "Value that the cloud cover must be above"}
+                ],
+                "Variables": []
+            },
+            {
+                "Name": "CloudCoverBelowValue",
+                "Description": "Trigger when the cloud cover is below a value",
+                "Params": [
+                    {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
+                    {"Name": "Value", "Type": "number", "Description": "Value that the cloud cover must be below"}
+                ],
+                "Variables": []
+            },
+            {
+                "Name": "WindSpeedAboveValue",
+                "Description": "Trigger when the wind speed is above a value",
+                "Params": [
+                    {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
+                    {"Name": "Value", "Type": "number", "Description": "Value that the wind speed must be above"}
+                ],
+                "Variables": []
+            },{
+                "Name": "WindSpeedBelowValue",
+                "Description": "Trigger when the wind speed is below a value",
+                "Params": [
+                    {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
+                    {"Name": "Value", "Type": "number", "Description": "Value that the wind speed must be below"}
+                ],
+                "Variables": []
+            },{
+                "Name": "RainPercentageAboveValue",
+                "Description": "Trigger when the rain percentage is above a value",
+                "Params": [
+                    {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
+                    {"Name": "Value", "Type": "number", "Description": "Value that the rain percentage must be above"}
+                ],
+                "Variables": []
+            },{
+                "Name": "RainPercentageBelowValue",
+                "Description": "Trigger when the rain percentage is below a value",
+                "Params": [
+                    {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
+                    {"Name": "Value", "Type": "number", "Description": "Value that the rain percentage must be below"}
+                ],
+                "Variables": []
+            }],
+        "Reactions": []
+    },
+    {
+        "Name": "Trello",
+        "Actions": [],
+        "Reactions": [{
+            "Name": "CreateBoard",
+            "Description": "Create a new board",
+            "Params": [
+                {"Name": "Name", "Type": "string", "Description": "Name of the board"}
+            ]
+        },
+            {
+                "Name": "CreateList",
+                "Description": "Create a new list",
+                "Params": [
+                    {"Name": "BoardId", "Type": "string", "Description": "Id of the board"},
+                    {"Name": "Name", "Type": "string", "Description": "Name of the list"}
+                ]
+            },
+            {
+                "Name": "CreateCard",
+                "Description": "Create a new card",
+                "Params": [
+                    {"Name": "ListId", "Type": "string", "Description": "Id of the list"},
+                    {"Name": "Name", "Type": "string", "Description": "Name of the card"},
+                    {"Name": "Description", "Type": "string", "Description": "Description of the card"}
+                ]
+            }]
+    },
+    {
+        "Name": "Pornhub",
+        "Actions": [{
+            "Name": "PornstarNewVideo",
+            "Description": "Trigger when a new video is uploaded by a pornstar",
+            "Variables": [],
+            "Params": [
+                {"Name": "Name", "Type": "string", "Description": "Name of the pornstar"}
+            ]
+        }],
+        "Reactions": []
+    },
+    {
+        "Name": "Dailymotion",
+        "Actions": [{
+                "Name": "VideoPublished",
+                "Description": "Trigger when a new video is published"
+            },
+            {
+                "Name": "VideoCreated",
+                "Description": "Trigger when a new video is created"
+            },
+            {
+                "Name": "VideoDeleted",
+                "Description": "Trigger when a video is deleted"
+            },
+            {
+                "Name": "VideoReady",
+                "Description": "Trigger when a the encoding of a video format is done"
+            }],
+        "Reactions": []
+    }
+]

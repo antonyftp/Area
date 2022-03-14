@@ -15,23 +15,13 @@ export default function DiscordCallback() {
     const navigate = useNavigate();
     const {currentUser, setCurrentUser, discord} = useAuth()
 
-    const checkCurrentUser = (): string => {
-        if (!currentUser) {
-            const local = getUser();
-            setCurrentUser(local);
-            return local.token
-        }
-        return currentUser.token
-    }
-
     const doFunc = async () => {
         code.get("code")
-        const res = checkCurrentUser()
         const codee = code.toString().slice(5).split("&")
         const codeee = JSON.stringify({
             code: codee[0]
         })
-        await discord(res, codeee)
+        await discord(codeee)
     }
 
     useEffect( () => {

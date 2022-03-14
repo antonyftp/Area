@@ -28,8 +28,6 @@ const Signin = () => {
     const [error, setError] = useState(false)
 
     useEffect(() => {
-        if (currentUser)
-            navigate("/home");
         (async () => {
             try {
                 const res = await axiosInstance.get("OAuth/getGoogleCredentials");
@@ -52,7 +50,7 @@ const Signin = () => {
                     <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} onClick={async () => {
                         try {
                             await signin(data.email, data.password)
-                            navigate("/home")
+                            navigate("/")
                         } catch (error) {
                             alert("Email ou mot de passe incorrect")
                             console.error(error);

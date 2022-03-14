@@ -1,3 +1,4 @@
+using System.Reflection;
 using Area.Database;
 using Area.Models;
 using Area.Services.OAuthService;
@@ -35,8 +36,7 @@ public class UserService
 
     public User GetUserById(string id)
     {
-        var user = _users.Find<User>(user => user.Id == id).FirstOrDefault();
-        return user;
+        return _users.Find<User>(user => user.Id == id).FirstOrDefault();
     }
 
     public User? Create(User user)
@@ -69,29 +69,24 @@ public class UserService
         var update = Builders<User>.Update.Set(e => e.DailymotionOAuth.id, id);
         _users.UpdateOne(filter, update);
     }
-    
-    public void AddActionReactionId(string userId ,string actionReactionId) 
-    {
-        var objectId = ObjectId.Parse(userId);
-        var filter = Builders<User>.Filter.Eq(nameof(Models.User.Id), objectId);
-        var update = Builders<User>.Update.AddToSet(nameof(Models.User.ActionsReactionsId), actionReactionId);
-        _users.UpdateOne(filter, update);
-    }
-    
-    public void RemoveActionReactionId(string userId ,string actionReactionId) 
-    {
-        var objectId = ObjectId.Parse(userId);
-        var filter = Builders<User>.Filter.Eq(nameof(Models.User.Id), objectId);
-        var update = Builders<User>.Update.Pull(e => e.ActionsReactionsId, actionReactionId);
-        _users.UpdateOne(filter, update);
-    }
-    
-    public void  AddOAuth(string userId, OAuthEnum service, string accessToken)
+
+    public void AddOAuth(string userId, OAuthEnum service, string accessToken)
     {
         User? user = GetUserById(userId);
         string serviceName = Enum.GetName(service);
         _users.UpdateOne(e => e.Id == userId, Builders<User>.Update.Set(serviceName, new OAuth() {
             accessToken = accessToken
         }));
+    }
+    
+    public void RemoveOAuth(string userId, OAuthEnum service)
+    {
+        User? user = GetUserById(userId);
+        string serviceName = Enum.GetName(service);
+        PropertyInfo oauth = user.GetType().GetProperty(serviceName);
+        Debug.WriteJson(user);
+        oauth.SetValue(user, null, null);
+        Debug.WriteJson(user);
+        _users.ReplaceOne(e => e.Id == userId, user);
     }
 }

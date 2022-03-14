@@ -37,11 +37,6 @@ export default function Signup() {
     const {currentUser} = useAuth()
     const navigate = useNavigate();
 
-    useEffect(() => {
-        if (currentUser)
-            navigate("/home")
-    }, [])
-
     return (
         <Box>
             <Container component="main" maxWidth="xs">

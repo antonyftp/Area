@@ -61,10 +61,7 @@ public class User
     
     [BsonElement("password")]
     public string Password { get; set; } = string.Empty;
-
-    [BsonElement("actionsReactionsId")] 
-    public List<string> ActionsReactionsId { get; set; } = new List<string>();
-
+    
     [BsonElement("actionsReactions")]
     public List<ActionReaction> ActionsReactions { get; set; } = new List<ActionReaction>();
 

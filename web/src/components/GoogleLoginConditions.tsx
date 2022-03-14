@@ -43,7 +43,7 @@ export default function GoogleLoginConditions(props: IProps) {
                         const res_ = res as GoogleLoginResponse
                         try {
                             await signinWithGoogle(res_.profileObj.email, res_.profileObj.name, res_.tokenObj.access_token)
-                            navigate("/home")
+                            navigate("/")
                         } catch (error) {
                             alert("An error occured, verify your informations and try again")
                             console.error(error);

@@ -35,42 +35,45 @@ public class TrelloService
         return $"https://trello.com/1/authorize?expiration={expiration}&name={name}&scope={scopes}&response_type=token&key={_trelloCredentials.ClientId}&return_url={redirectUrl}&callback_method={callbackMethod}";
     }
     
-    private async void CreateWebhooks(string callbackUrl, string modelId, string description, ActionReaction actionReaction)
+    public async Task CreateWebhooks(string callbackUrl, string modelId, string description, ActionReaction actionReaction)
     {
-        User user = _userService.GetCurrentUser()!;
-        HttpResponseMessage response = await _httpClient.PostAsJsonAsync($"tokens/{user.TrelloOAuth.accessToken}/webhooks/?key{_trelloCredentials.ClientId}", new {
-            callbackURL = _webhooksSettings.ServerBaseUrl + callbackUrl,
-            idModel = modelId,
-            description = description
-        });
+        try {
+            User user = _userService.GetCurrentUser()!;
+            Console.WriteLine(user.TrelloOAuth.accessToken);
+            Console.WriteLine(_trelloCredentials.ClientId);
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync($"tokens/{user.TrelloOAuth.accessToken}/webhooks/?key={_trelloCredentials.ClientId}", new {
+                    callbackURL = _webhooksSettings.ServerBaseUrl + callbackUrl,
+                    idModel = modelId,
+                    description = description
+                });
+            Debug.WriteJson(response);
+        } catch (Exception e) {
+            Console.WriteLine(e.Message);
+            throw new Exception("Failed to create webhooks");
+        }
         // actionReaction.Data.Add("hookId", res.Id.ToString());
     }
 
-    public async void CreateNewBoard(Dictionary<string, string> parameters, string id)
+    public async void CreateNewBoard(Dictionary<string, string> parameters, User user)
     {
         string name = parameters["Name"];
-        User? user = _userService.GetUserById(id);
         var res = await _httpClient.PostAsJsonAsync($"/1/boards?name={name}&key={_trelloCredentials.ClientId}&token={user.TrelloOAuth.accessToken}", new {
         });
     }
 
-    public async void CreateNewList(Dictionary<string, string> parameters, string id)
+    public async void CreateNewList(Dictionary<string, string> parameters, User user)
     {
         string boardId = parameters["BoardId"];
         string name = parameters["Name"];
-        Console.WriteLine(boardId, name);
-        User? user = _userService.GetUserById(id);
         var res = await _httpClient.PostAsJsonAsync($"/1/lists?idBoard={boardId}&name={name}&key={_trelloCredentials.ClientId}&token={user.TrelloOAuth.accessToken}", new {
         });
     }
 
-    public async void CreateNewCard(Dictionary<string, string> parameters, string id)
+    public async void CreateNewCard(Dictionary<string, string> parameters, User user)
     {
         string boardId = parameters["ListId"];
         string name = parameters["Name"];
         string desc = parameters["Description"];
-        Console.WriteLine("ttttttttttttt");
-        User? user = _userService.GetUserById(id);
         var res = await _httpClient.PostAsJsonAsync($"/1/cards?idList={boardId}&name={name}&desc={desc}&key={_trelloCredentials.ClientId}&token={user.TrelloOAuth.accessToken}", new {
         });
     }

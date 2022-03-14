@@ -51,7 +51,7 @@ export default function SignUpConditions(props: IProps) {
                             await signup(props.data.email, props.data.password, props.data.name)
                             displaySuccess()
                             await signin(props.data.email, props.data.password)
-                            navigate("/home")
+                            navigate("/")
                         } catch (error) {
                             alert("An error occured, verify your informations and try again")
                             console.error(error);

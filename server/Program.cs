@@ -49,6 +49,7 @@ builder.Services.AddSingleton<DatabaseContext>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ServiceService>();
 builder.Services.AddScoped<ActionReactionService>();
+builder.Services.AddScoped<ReactionService>();
 builder.Services.AddScoped<GithubService>();
 builder.Services.AddScoped<GoogleService>();
 builder.Services.AddScoped<DiscordService>();

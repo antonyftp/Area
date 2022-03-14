@@ -14,22 +14,12 @@ export default function GithubCallback() {
     const navigate = useNavigate();
     const {currentUser, setCurrentUser, github} = useAuth()
 
-    const checkCurrentUser = (): string => {
-        if (!currentUser) {
-            const local = getUser();
-            setCurrentUser(local);
-            return local.token
-        }
-        return currentUser.token
-    }
-
     const doFunc = async () => {
         code.get("code")
-        const res = checkCurrentUser()
         const codee = JSON.stringify({
                 code: code.toString().slice(5)
             })
-        await github(res, codee)
+        await github(codee)
     }
 
     useEffect( () => {

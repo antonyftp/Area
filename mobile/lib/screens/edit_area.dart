@@ -1,8 +1,7 @@
-import 'dart:convert';
 import 'package:area/constants/area_theme.dart';
 import 'package:area/controllers/backend.dart';
 import 'package:area/screens/home/home.dart';
-import 'package:area/utils/AreaDialog.dart';
+import 'package:area/utils/area_dialog.dart';
 import 'package:area/widgets/area_input_field.dart';
 import 'package:area/widgets/area_raised_button.dart';
 import 'package:flutter/material.dart';

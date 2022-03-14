@@ -5,7 +5,7 @@ namespace Area.Utils;
 
 public class Debug
 {
-    public static void WriteClass<T>(T object_)
+    public static void WriteJson<T>(T object_)
     {
         var options = new JsonSerializerOptions() { WriteIndented = true };
         string jsonString = JsonSerializer.Serialize(object_, options);
@@ -19,5 +19,11 @@ public class Debug
             Console.WriteLine($"\"{keyValuePair.Key}\": {keyValuePair.Value}");
         }
         Console.WriteLine("}");
+    }
+    
+    public static void WriteJson(HttpResponseMessage req)
+    {
+        var json = req.Content.ReadAsStringAsync().Result;
+        Console.WriteLine(json);
     }
 }

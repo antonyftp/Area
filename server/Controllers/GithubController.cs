@@ -17,13 +17,15 @@ public class GithubController : Controller
     private readonly UserService _userService;
     private readonly ActionReactionService _actionReactionService;
     private readonly GithubService _githubService;
+    private readonly ReactionService _reactionService;
     private readonly HttpContextAccessor _httpContextAccessor;
-    public GithubController(UserService userService, ActionReactionService actionReactionService, GithubService githubService, HttpContextAccessor httpContextAccessor)
+    public GithubController(UserService userService, ActionReactionService actionReactionService, GithubService githubService, HttpContextAccessor httpContextAccessor, ReactionService reaction)
     {
         _userService = userService;
         _actionReactionService = actionReactionService;
         _githubService = githubService;
         _httpContextAccessor = httpContextAccessor;
+        _reactionService = reaction;
     }
 
     [HttpPost("test")]
@@ -43,13 +45,15 @@ public class GithubController : Controller
         {
             var txt = await reader.ReadToEndAsync();
             JObject json = JObject.Parse(txt);
+            if (!json.ContainsKey("commits"))
+                return Ok();
             var variables = new Dictionary<string, string>() {
-                {"Author", (string)json["commits"][0]["author"]["name"]},
-                {"Commit", (string)json["commits"][0]["message"]}
+                {"Author", (string) json["commits"][0]["author"]["name"]},
+                {"Commit", (string) json["commits"][0]["message"]}
             };
             var actionReaction = _actionReactionService.FindGithubActReactFromEvent("push", json["repository"]["owner"]["login"].Value<string>());
             var user = _userService.GetUserById(actionReaction.UserId);
-            _actionReactionService.ReactionFromAction(user, actionReaction, variables);
+            _reactionService.ReactionFromAction(user, actionReaction, variables);
         }
         return Ok();
     }
@@ -63,7 +67,7 @@ public class GithubController : Controller
             JObject json = JObject.Parse(txt);
             var actionReaction = _actionReactionService.FindGithubActReactFromEvent("pull_request", json["pusher"]["name"].Value<string>());
             var user = _userService.GetUserById(actionReaction.UserId);
-            _actionReactionService.ReactionFromAction(user, actionReaction);
+            _reactionService.ReactionFromAction(user, actionReaction);
         }
         return Ok();
     }
@@ -77,7 +81,7 @@ public class GithubController : Controller
             JObject json = JObject.Parse(txt);
             var actionReaction = _actionReactionService.FindGithubActReactFromEvent("workflow_run", json["pusher"]["name"].Value<string>());
             var user = _userService.GetUserById(actionReaction.UserId);
-            _actionReactionService.ReactionFromAction(user, actionReaction);
+            _reactionService.ReactionFromAction(user, actionReaction);
         }
         return Ok();
     }

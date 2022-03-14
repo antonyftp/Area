@@ -1,13 +1,10 @@
-import 'dart:convert';
-
 import 'package:area/constants/area_theme.dart';
-import 'package:area/controllers/backend.dart';
+import 'package:area/constants/settings.dart';
 import 'package:area/screens/signin/tabs/signin.dart';
 import 'package:area/screens/signin/tabs/signup.dart';
-import 'package:area/utils/AreaDialog.dart';
+import 'package:area/utils/area_dialog.dart';
 import 'package:area/widgets/area_input_field.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -46,6 +43,7 @@ class _LoginRegisterState extends State<LoginRegister> with SingleTickerProvider
 
   _changeEndpoint() async {
     final _prefs = await SharedPreferences.getInstance();
+    _apiEndpointController.text = _prefs.getString("endpoint") ?? Settings.backendEndpoint;
     AreaDialog.showComplex(
         title: "New EndPoint",
         rightButtonText: "Change",

@@ -5,7 +5,7 @@ import 'package:area/constants/settings.dart';
 import 'package:area/controllers/backend.dart';
 import 'package:area/screens/oauth_link.dart';
 import 'package:area/screens/home/home.dart';
-import 'package:area/utils/AreaDialog.dart';
+import 'package:area/utils/area_dialog.dart';
 import 'package:area/widgets/area_icon_button.dart';
 import 'package:area/widgets/area_input_field.dart';
 import 'package:area/widgets/area_raised_button.dart';
@@ -26,10 +26,12 @@ class _AccountState extends State<Account> {
   late final SharedPreferences _prefs;
   String? _username;
   String? _email;
-  List<String> _accounts = ["Google", "Discord", "Github"];
+  final List<String> _accounts = ["Google", "Discord", "Github"];
   final TextEditingController _apiEndpointController = TextEditingController();
+  bool googleSignIn = false;
 
   _changeEndpoint() {
+    _apiEndpointController.text = _prefs.getString("endpoint") ?? Settings.backendEndpoint;
     AreaDialog.showComplex(
         title: "New EndPoint",
         rightButtonText: "Change",
@@ -60,6 +62,7 @@ class _AccountState extends State<Account> {
   }
 
   _updateServices() {
+    Get.printInfo(info: "Updating services...");
     BackendController.getUser().then((dynamic value) {
       _accounts.clear();
       if (value != null) {
@@ -78,6 +81,9 @@ class _AccountState extends State<Account> {
         if (value["dailymotionOAuth"] != null) {
           _accounts.add("Dailymotion");
         }
+      }
+      if (value["loginType"] == 1) {
+        googleSignIn = true;
       }
       setState(() {});
     });
@@ -116,9 +122,15 @@ class _AccountState extends State<Account> {
         AreaDialog.show(message: "Something went wrong while unlinking Google account", title: "Error");
         return;
       }
+      _updateServices();
       return;
     }
-    GoogleSignIn _googleSignIn = GoogleSignIn();
+    GoogleSignIn _googleSignIn = GoogleSignIn(
+      scopes: [
+        'https://www.googleapis.com/auth/userinfo.email',
+        'https://mail.google.com/',
+      ],
+    );
     try {
       final user = await _googleSignIn.signIn();
       user!.authentication.then((value) async {
@@ -180,6 +192,7 @@ class _AccountState extends State<Account> {
                           AreaDialog.show(message: "Something went wrong while unlinking Github account", title: "Error");
                           return;
                         }
+                        _updateServices();
                         return;
                       }
                       final githubLink = await BackendController.getGithubOAuthLink();
@@ -193,6 +206,7 @@ class _AccountState extends State<Account> {
                         "serviceColor": AreaTheme.black,
                         "serviceCallbackUrl": Settings.githubCallback,
                         "backendFunction": BackendController.sendGithubCode,
+                        "updateServices": _updateServices
                       });
                     },
                     child: Row(
@@ -212,7 +226,7 @@ class _AccountState extends State<Account> {
                 ),
               ),
 
-              Padding(
+              if (!googleSignIn) Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: AreaIconButton(
                   color: AreaTheme.white,
@@ -239,11 +253,12 @@ class _AccountState extends State<Account> {
                   color: AreaTheme.trelloBlue,
                   onPressed: () async {
                     if (_accounts.contains("Trello")) {
-                      final res = await BackendController.unlinkGithub();
+                      final res = await BackendController.unlinkTrello();
                       if (res != null) {
                         AreaDialog.show(message: "Something went wrong while unlinking Trello account", title: "Error");
                         return;
                       }
+                      _updateServices();
                       return;
                     }
                     final trelloLink = await BackendController.getTrelloUrl();
@@ -257,6 +272,7 @@ class _AccountState extends State<Account> {
                       "serviceColor": AreaTheme.trelloBlue,
                       "serviceCallbackUrl": Settings.trelloCallBack,
                       "backendFunction": BackendController.postTrelloUrl,
+                      "updateServices": _updateServices
                     });
                   },
                   child: Row(
@@ -281,11 +297,12 @@ class _AccountState extends State<Account> {
                   color: AreaTheme.black,
                   onPressed: () async {
                     if (_accounts.contains("Daylimotion")) {
-                      final res = await BackendController.unlinkGithub();
+                      final res = await BackendController.unlinkDailymotion();
                       if (res != null) {
                         AreaDialog.show(message: "Something went wrong while unlinking Daylimontion account", title: "Error");
                         return;
                       }
+                      _updateServices();
                       return;
                     }
                     final daylimontionLink = await BackendController.getDaylimotionUrl();
@@ -297,8 +314,9 @@ class _AccountState extends State<Account> {
                       "serviceName": "Daylimontion",
                       "serviceUrl": daylimontionLink,
                       "serviceColor": AreaTheme.black,
-                      "serviceCallbackUrl": Settings.daylimotionCallback,
+                      "serviceCallbackUrl": Settings.dailymotionCallback,
                       "backendFunction": BackendController.postDaylimotionCode,
+                      "updateServices": _updateServices
                     });
                   },
                   child: Row(

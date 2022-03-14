@@ -19,10 +19,11 @@ namespace Area.Controllers
         private readonly GithubService _githubService;
         private readonly TrelloService _trelloService;
         private readonly PornhubService _pornhubService;
-        private ActionReactionService _actionReactionService;
+        //private ActionReactionService _actionReactionService;
+        private readonly ReactionService _reactionService;
         
         public WorkerController(UserService userService, ActionReactionService arService, WeatherService weather,
-            GoogleService google, GithubService github, TrelloService trello, PornhubService pornhub, ActionReactionService actionReactionService)
+            GoogleService google, GithubService github, TrelloService trello, PornhubService pornhub, ActionReactionService actionReactionService, ReactionService reaction)
         {
             _userService = userService;
             _arService = arService;
@@ -31,7 +32,8 @@ namespace Area.Controllers
             _githubService = github;
             _trelloService = trello;
             _pornhubService = pornhub;
-            _actionReactionService = actionReactionService;
+            _reactionService = reaction;
+            //_actionReactionService = actionReactionService;
         }
 
         [HttpPost]
@@ -45,103 +47,64 @@ namespace Area.Controllers
                 foreach (var i in my) {
                     switch (i.ActionService) {
                         case "Weather":
-                            Dictionary<string, string> map = new Dictionary<string, string>(i.ParamsAction);
+                            Dictionary<string, string>? parameters = i.ParamsAction;
+                            if (parameters == null)
+                                break;
                             WeatherService.WeatherDataGet data = new WeatherService.WeatherDataGet();
-                            data.q = map.GetValueOrDefault("City");
-                            data.value = map.GetValueOrDefault("Value");
-                            switch (i.Action)
-                            {
+                            data.q = parameters.GetValueOrDefault("City");
+                            data.value = parameters.GetValueOrDefault("Value");
+                            switch (i.Action) {
                                 case "TemperatureBelowValue":
-                                    if (_weatherService.getTemp(data) == true)
-                                        _actionReactionService.ReactionFromAction(user, i);
+                                    var used = i.Data?.GetValueOrDefault("last");
+                                    if (_weatherService.GetTemp(data, i))
+                                        _reactionService.ReactionFromAction(user, i);
                                     break;
                                 case "AirQualityBelowValue":
-                                    if (_weatherService.geto2(data) == true)
-                                        _actionReactionService.ReactionFromAction(user, i);
-                                    break;
-                                case "UVIndexBelowValue":
-                                    if (_weatherService.getUV(data) == true)
-                                        _actionReactionService.ReactionFromAction(user, i);
+                                    if (_weatherService.GetO2(data, i))
+                                        _reactionService.ReactionFromAction(user, i);
                                     break;
                                 case "CloudCoverBelowValue":
-                                    if (_weatherService.getCloud(data) == true)
-                                        _actionReactionService.ReactionFromAction(user, i);
+                                    if (_weatherService.GetCloud(data, i))
+                                        _reactionService.ReactionFromAction(user, i);
                                     break;
                                 case "WindSpeedBelowValue":
-                                    if (_weatherService.getWind(data) == true)
-                                        _actionReactionService.ReactionFromAction(user, i);
+                                    if (_weatherService.GetWind(data, i))
+                                        _reactionService.ReactionFromAction(user, i);
                                     break;
                                 case "RainPercentageBelowValue":
-                                    if (_weatherService.getPrecip(data) == true)
-                                        _actionReactionService.ReactionFromAction(user, i);
-                                        break;
+                                    if (_weatherService.GetPrecip(data, i))
+                                        _reactionService.ReactionFromAction(user, i);
+                                    break;
                                 case "WeatherRainy":
-                                    string? str = i.Data?.GetValueOrDefault("Value");
-                                    if ((str = _weatherService.getcondition(data, str)) != null)
+                                    if (_weatherService.GetCondition(data, i))
                                     {
-                                        UpdateActionReactionToUserBody temp = new UpdateActionReactionToUserBody();
-                                        temp.ActionReactionId = i.Id;
-                                        temp.Name = i.Name;
-                                        temp.ParamsAction = i.ParamsAction;
-                                        temp.ParamsReaction = i.ParamsReaction;
-                                        temp.Data = i.Data;
-                                        temp.Data?.Remove("Value");
-                                        temp.Data?.Add("Value", str);
-                                        _arService.Update(temp, user.Id);
-                                        _actionReactionService.ReactionFromAction(user, i);
+                                        _reactionService.ReactionFromAction(user, i);
                                     }
 
-                                    break;
-                                default:
                                     break;
                             }
 
                             break;
                         case "Gmail":
-                            switch (i.Action)
-                            {
+                            _googleService.SetClientCredentials(user);
+                            switch (i.Action) {
                                 case "OnEmail":
-                                    string? str = i.Data?.GetValueOrDefault("Value");
-                                    string? access = user?.GoogleOAuth?.accessToken;
-                                    if ((str = _googleService.GetMailList(access, str).Result) != null)
+                                    if (_googleService.GetMailList(i).Result)
                                     {
-                                        UpdateActionReactionToUserBody temp = new UpdateActionReactionToUserBody();
-                                        temp.ActionReactionId = i.Id;
-                                        temp.Name = i.Name;
-                                        temp.ParamsAction = i.ParamsAction;
-                                        temp.ParamsReaction = i.ParamsReaction;
-                                        temp.Data = i.Data;
-                                        temp.Data?.Remove("Value");
-                                        temp.Data?.Add("Value", str);
-                                        _arService.Update(temp, user.Id);
-                                        _actionReactionService.ReactionFromAction(user, i);
+                                        _reactionService.ReactionFromAction(user, i);
                                     }
-
                                     break;
                             }
-
                             break;
                         case "Pornhub":
                             switch (i.Action) {
                                 default:
-                                    string? mystr = i.Data?.GetValueOrDefault("Value");
-                                    var str = _pornhubService
-                                        .GetPornstar(mystr, i.ParamsAction.GetValueOrDefault("Name"))
-                                        .Result;
-                                    if (str != null)
+                                    if (_pornhubService
+                                        .GetPornstar(i)
+                                        .Result)
                                     {
-                                        UpdateActionReactionToUserBody temp = new UpdateActionReactionToUserBody();
-                                        temp.ActionReactionId = i.Id;
-                                        temp.Name = i.Name;
-                                        temp.ParamsAction = i.ParamsAction;
-                                        temp.ParamsReaction = i.ParamsReaction;
-                                        temp.Data = i.Data;
-                                        temp.Data?.Remove("Value");
-                                        temp.Data?.Add("Value", str);
-                                        _arService.Update(temp, user.Id);
-                                        _actionReactionService.ReactionFromAction(user, i);
+                                        _reactionService.ReactionFromAction(user, i);
                                     }
-
                                     break;
                             }
                             break;

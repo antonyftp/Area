@@ -12,25 +12,15 @@ export default function DailymotionCallback() {
     const [code, setCode] = useSearchParams();
     const {currentUser, setCurrentUser, dailymotion} = useAuth()
 
-    const checkCurrentUser = (): string => {
-        if (!currentUser) {
-            const local = getUser();
-            setCurrentUser(local);
-            return local.token
-        }
-        return currentUser.token
-    }
-
     const doFunc = async () => {
         const url = window.location.href
         const start = url.indexOf("code=") + 5;
         const end = url.indexOf("&", start);
         const code = url.slice(start, end)
-        const res = checkCurrentUser()
         const codee = JSON.stringify({
             code
         })
-        await dailymotion(res, codee)
+        await dailymotion(codee)
     }
 
     useEffect( () => {

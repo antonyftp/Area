@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:area/constants/area_theme.dart';
 import 'package:area/screens/edit_area.dart';
-import 'package:area/utils/AreaDialog.dart';
+import 'package:area/utils/area_dialog.dart';
 import 'package:area/widgets/area_dropdown_button.dart';
 import 'package:area/widgets/area_input_field.dart';
 import 'package:area/widgets/area_raised_button.dart';
@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+//ignore: must_be_immutable
 class NewARea extends StatefulWidget {
   NewARea({Key? key, required this.refresh}) : super(key: key);
   void Function() refresh;
@@ -25,7 +26,7 @@ class _NewAReaState extends State<NewARea> {
   String _selectedReactionService = "-1";
   String _selectedReaction = "-1";
   dynamic _services;
-  List<String> _linkedServices = [];
+  final List<String> _linkedServices = [];
 
   @override
   void initState() {

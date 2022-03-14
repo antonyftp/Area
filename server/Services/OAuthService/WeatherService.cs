@@ -1,166 +1,364 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Net.Http.Headers;
+using Area.Controllers;
+using Microsoft.AspNetCore.Builder;
 using Newtonsoft.Json;
 using Area.Models;
+using Area.Utils;
 using Microsoft.AspNetCore.Mvc;
 namespace Area.Services.OAuthService;
     public class WeatherService
     {
         private readonly UserService _userService;
-        static HttpClient Client = new HttpClient();
+        private readonly ActionReactionService _arService;
+        private static HttpClient Client;
 
         public class WeatherDataGet
         {
-            public string key { get; set; } = "344359470f5a42c0bf2152826212212";
+            public string key { get; set; } = "0119cd5856364645a4f110759221303";
             public string q { get; set; }
             public string value { get; set; }
         }
 
-        public class WeatherData
-        {
-            public string key { get; set; }
-            public string q { get; set; }
-            public string aqi { get; set; } = "yes";
-
-        }
-
-        public class current
-        {
-            public string temp_c { get; set; }
-            public string win_kph { get; set; }
-            public string precip_mm { get; set; }
-            public string humidity { get; set; }
-            public string cloud { get; set; }
-            public string uv { get; set; }
-            public condition _condition { get; set; }
-            
-        }
-
-        public class condition
-        {
-            public string text { get; set; }
-        }
-
-        public class air_quality
-        {
-            public string co { get; set; }
-        }
-
         public class WeatherResponse
         {
-            public current _current { get; set; }
-            public air_quality _air_quality { get; set; }
+            public class Condition
+            {
+                public string text { get; set; }
+            }
+
+            public class AirQuality
+            {
+                public string co { get; set; }
+            }
+
+            public class Current
+            {
+                public string temp_c { get; set; }
+                public string win_kph { get; set; }
+                public string precip_mm { get; set; }
+                public string humidity { get; set; }
+                public string cloud { get; set; }
+                public string uv { get; set; }
+                public Condition condition { get; set; }
+                public AirQuality air_quality { get; set; }
+            }
+
+            public Current current { get; set; }
         }
-        public WeatherService(UserService userService)
+        public WeatherService(UserService userService, ActionReactionService ar)
         {
             _userService = userService;
+            _arService = ar;
+            Client = new HttpClient();
+            Client.BaseAddress = new Uri("http://api.weatherapi.com/v1/");
+            Client.DefaultRequestHeaders.Accept.Clear();
+            Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
         public async Task<WeatherResponse> GetData(WeatherDataGet data)
         {
-            var response = new HttpResponseMessage();
-            var mydata = new WeatherData();
+            try {
+                HttpResponseMessage response = await Client.GetAsync($"current.json?key={data.key}&q={data.q}&aqi=yes");
+                return await response.Content.ReadAsAsync<WeatherResponse>();
+            } catch (Exception e) {
+                Console.WriteLine(e.Message);
+                throw new Exception("Failed to fetch Weather data");
+            }
+        }
+        public bool GetTemp(WeatherDataGet data, ActionReaction i)
+        {
+            var result = GetData(data).Result;
+            var State = i.Data.GetValueOrDefault("State");
+            UpdateActionReactionToUserBody temp = new UpdateActionReactionToUserBody();
+            temp.ActionReactionId = i.Id;
+            temp.Name = i.Name;
+            temp.ParamsAction = i.ParamsAction;
+            temp.ParamsReaction = i.ParamsReaction;
+            temp.Data = i.Data;
 
-            mydata.key = data.key;
-            mydata.q = data.q;
-            using (
-                var request = new HttpRequestMessage(HttpMethod.Get, "http://api.weatherapi.com/v1/current.json"))
+            if (State == null)
             {
-                var myjson = JsonConvert.SerializeObject(mydata);
-                using (var stringContent = new StringContent(myjson, System.Text.Encoding.UTF8, "application/json"))
+                if (float.Parse(result.current.temp_c) >= float.Parse(data.value))
                 {
-                    request.Content = stringContent;
-                    response = await Client.SendAsync(request);
+                    temp.Data?.Add("State", "Above");
                 }
-
-                if (response.IsSuccessStatusCode)
+                if (float.Parse(result.current.temp_c) < float.Parse(data.value))
                 {
-                    string responseBody = await response.Content.ReadAsStringAsync();
-                    var json = JsonConvert.DeserializeObject<WeatherResponse>(responseBody);
-                    return json;
+                    temp.Data?.Add("State", "Below");
                 }
-
-                return null;
+                _arService.Update(temp, i.UserId);
             }
-        }
-        public bool getTemp(WeatherDataGet data)
-        {
-            var result = GetData(data).Result;
-
-            if (Int32.Parse(result._current.temp_c) < Int32.Parse(data.value))
+            else
             {
-                return true;
-            }
-            return false;
-        }
-        public bool getWind(WeatherDataGet data)
-        {
-            var result = GetData(data).Result;
-
-            if (Int32.Parse(result._current.win_kph) < Int32.Parse(data.value))
-            {
-                return true;
+                if (State == "Below" && float.Parse(result.current.temp_c) >= float.Parse(data.value))
+                {
+                    temp.Data?.Remove("State");
+                    temp.Data?.Add("State", "Above");
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
+                if (State == "Above" && float.Parse(result.current.temp_c) < float.Parse(data.value))
+                {
+                    temp.Data?.Remove("State");
+                    temp.Data?.Add("State", "Below");
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
             }
             return false;
         }
-        public bool getPrecip(WeatherDataGet data)
+        public bool GetWind(WeatherDataGet data, ActionReaction i)
         {
             var result = GetData(data).Result;
+            var State = i.Data.GetValueOrDefault("State");
+            UpdateActionReactionToUserBody temp = new UpdateActionReactionToUserBody();
+            temp.ActionReactionId = i.Id;
+            temp.Name = i.Name;
+            temp.ParamsAction = i.ParamsAction;
+            temp.ParamsReaction = i.ParamsReaction;
+            temp.Data = i.Data;
 
-            if (Int32.Parse(result._current.precip_mm) < Int32.Parse(data.value))
+            if (State == null)
             {
-                return true;
+                if (float.Parse(result.current.win_kph) >= float.Parse(data.value))
+                {
+                    temp.Data?.Add("State", "Above");
+                }
+                if (float.Parse(result.current.win_kph) < float.Parse(data.value))
+                {
+                    temp.Data?.Add("State", "Below");
+                }
+                _arService.Update(temp, i.UserId);
+            }
+            else
+            {
+                if (State == "Below" && float.Parse(result.current.win_kph) >= float.Parse(data.value))
+                {
+                    temp.Data?.Remove("State");
+                    temp.Data?.Add("State", "Above");
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
+                if (State == "Above" && float.Parse(result.current.win_kph) < float.Parse(data.value))
+                {
+                    temp.Data?.Remove("State");
+                    temp.Data?.Add("State", "Below");
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
             }
             return false;
         }
-        public bool getHumidity(WeatherDataGet data)
+        public bool GetPrecip(WeatherDataGet data, ActionReaction i)
         {
             var result = GetData(data).Result;
+            var State = i.Data.GetValueOrDefault("State");
+            UpdateActionReactionToUserBody temp = new UpdateActionReactionToUserBody();
+            temp.ActionReactionId = i.Id;
+            temp.Name = i.Name;
+            temp.ParamsAction = i.ParamsAction;
+            temp.ParamsReaction = i.ParamsReaction;
+            temp.Data = i.Data;
 
-            if (Int32.Parse(result._current.humidity) < Int32.Parse(data.value))
+            if (State == null)
             {
-                return true;
+                if (float.Parse(result.current.precip_mm) >= float.Parse(data.value))
+                {
+                    temp.Data?.Add("State", "Above");
+                }
+                if (float.Parse(result.current.precip_mm) < float.Parse(data.value))
+                {
+                    temp.Data?.Add("State", "Below");
+                }
+                _arService.Update(temp, i.UserId);
+            }
+            else
+            {
+                if (State == "Below" && float.Parse(result.current.precip_mm) >= float.Parse(data.value))
+                {
+                    temp.Data?.Remove("State");
+                    temp.Data?.Add("State", "Above");
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
+                if (State == "Above" && float.Parse(result.current.precip_mm) < float.Parse(data.value))
+                {
+                    temp.Data?.Remove("State");
+                    temp.Data?.Add("State", "Below");
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
             }
             return false;
         }
-        public bool getCloud(WeatherDataGet data)
+        public bool GetHumidity(WeatherDataGet data, ActionReaction i)
         {
             var result = GetData(data).Result;
+            var State = i.Data.GetValueOrDefault("State");
+            UpdateActionReactionToUserBody temp = new UpdateActionReactionToUserBody();
+            temp.ActionReactionId = i.Id;
+            temp.Name = i.Name;
+            temp.ParamsAction = i.ParamsAction;
+            temp.ParamsReaction = i.ParamsReaction;
+            temp.Data = i.Data;
 
-            if (Int32.Parse(result._current.cloud) < Int32.Parse(data.value))
+            if (State == null)
             {
-                return true;
+                if (float.Parse(result.current.humidity) >= float.Parse(data.value))
+                {
+                    temp.Data?.Add("State", "Above");
+                }
+                if (float.Parse(result.current.humidity) < float.Parse(data.value))
+                {
+                    temp.Data?.Add("State", "Below");
+                }
+                _arService.Update(temp, i.UserId);
+            }
+            else
+            {
+                if (State == "Below" && float.Parse(result.current.humidity) >= float.Parse(data.value))
+                {
+                    temp.Data?.Remove("State");
+                    temp.Data?.Add("State", "Above");
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
+                if (State == "Above" && float.Parse(result.current.humidity) < float.Parse(data.value))
+                {
+                    temp.Data?.Remove("State");
+                    temp.Data?.Add("State", "Below");
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
             }
             return false;
         }
-        
-        public bool getUV(WeatherDataGet data)
+        public bool GetCloud(WeatherDataGet data, ActionReaction i)
         {
             var result = GetData(data).Result;
+            var State = i.Data.GetValueOrDefault("State");
+            UpdateActionReactionToUserBody temp = new UpdateActionReactionToUserBody();
+            temp.ActionReactionId = i.Id;
+            temp.Name = i.Name;
+            temp.ParamsAction = i.ParamsAction;
+            temp.ParamsReaction = i.ParamsReaction;
+            temp.Data = i.Data;
 
-            if (Int32.Parse(result._current.uv) < Int32.Parse(data.value))
+            if (State == null)
             {
-                return true;
+                if (float.Parse(result.current.cloud) >= float.Parse(data.value))
+                {
+                    temp.Data?.Add("State", "Above");
+                }
+                if (float.Parse(result.current.cloud) < float.Parse(data.value))
+                {
+                    temp.Data?.Add("State", "Below");
+                }
+                _arService.Update(temp, i.UserId);
+            }
+            else
+            {
+                if (State == "Below" && float.Parse(result.current.cloud) >= float.Parse(data.value))
+                {
+                    temp.Data?.Remove("State");
+                    temp.Data?.Add("State", "Above");
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
+                if (State == "Above" && float.Parse(result.current.cloud) < float.Parse(data.value))
+                {
+                    temp.Data?.Remove("State");
+                    temp.Data?.Add("State", "Below");
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
             }
             return false;
         }
-        public string? getcondition(WeatherDataGet data, string? stocked)
-        {
-            
-            var result = GetData(data).Result;
 
-            if (stocked == null || result._current._condition.text != stocked)
+
+        public bool GetCondition(WeatherDataGet data, ActionReaction i)
+        {
+
+            var result = GetData(data).Result;
+            var State = i.Data.GetValueOrDefault("State");
+            UpdateActionReactionToUserBody temp = new UpdateActionReactionToUserBody();
+            temp.ActionReactionId = i.Id;
+            temp.Name = i.Name;
+            temp.ParamsAction = i.ParamsAction;
+            temp.ParamsReaction = i.ParamsReaction;
+            temp.Data = i.Data;
+
+            if (State == null)
             {
-                return result._current._condition.text;
+                if (result.current.condition.text == "Sunny")
+                {
+                    temp.Data?.Add("State", "Sunny");
+                }
+                if (result.current.condition.text == "Rainy")
+                {
+                    temp.Data?.Add("State", "Rainy");
+                }
+                _arService.Update(temp, i.UserId);
             }
-            return null;
+            else
+            {
+                if (State == "Sunny" && result.current.condition.text == "Rainy")
+                {
+                    temp.Data?.Remove("State");
+                    temp.Data?.Add("State", "Rainy");
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
+                if (State == "Rainy" && result.current.condition.text == "Sunny")
+                {
+                    temp.Data?.Remove("State");
+                    temp.Data?.Add("State", "Sunny");
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
+            }
+            return false;
         }
-        public bool geto2(WeatherDataGet data)
+        public bool GetO2(WeatherDataGet data, ActionReaction i)
         {
             var result = GetData(data).Result;
+            var State = i.Data.GetValueOrDefault("State");
+            UpdateActionReactionToUserBody temp = new UpdateActionReactionToUserBody();
+            temp.ActionReactionId = i.Id;
+            temp.Name = i.Name;
+            temp.ParamsAction = i.ParamsAction;
+            temp.ParamsReaction = i.ParamsReaction;
+            temp.Data = i.Data;
 
-            if (Int32.Parse(result._air_quality.co) > Int32.Parse(data.value))
+            if (State == null)
             {
-                return true;
+                if (float.Parse(result.current.air_quality.co) >= float.Parse(data.value))
+                {
+                    temp.Data?.Add("State", "Above");
+                }
+                if (float.Parse(result.current.air_quality.co) < float.Parse(data.value))
+                {
+                    temp.Data?.Add("State", "Below");
+                }
+                _arService.Update(temp, i.UserId);
+            }
+            else
+            {
+                if (State == "Below" && float.Parse(result.current.air_quality.co) >= float.Parse(data.value))
+                {
+                    temp.Data?.Remove("State");
+                    temp.Data?.Add("State", "Above");
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
+                if (State == "Above" && float.Parse(result.current.air_quality.co) < float.Parse(data.value))
+                {
+                    temp.Data?.Remove("State");
+                    temp.Data?.Add("State", "Below");
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
             }
             return false;
         }

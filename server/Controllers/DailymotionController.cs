@@ -11,13 +11,15 @@ public class DailymotionController : Controller
 {
     private readonly DailymotionService _dailymotionService;
     private readonly ActionReactionService _actionReactionService;
+    private readonly ReactionService _reactionService;
     private readonly UserService _userService;
 
-    public DailymotionController(DailymotionService dailymotionService, ActionReactionService actionReactionService, UserService userService)
+    public DailymotionController(DailymotionService dailymotionService, ActionReactionService actionReactionService, UserService userService, ReactionService reaction)
     {
         _dailymotionService = dailymotionService;
         _actionReactionService = actionReactionService;
         _userService = userService;
+        _reactionService = reaction;
     }
 
     [HttpPost("video.published")]
@@ -29,7 +31,7 @@ public class DailymotionController : Controller
             JObject json = JObject.Parse(txt);
             var actionReaction = _actionReactionService.FindDailymotionActReact("video.published", (string)json["data"]["owner_id"]);
             var user = _userService.GetUserById(actionReaction.UserId);
-            _actionReactionService.ReactionFromAction(user, actionReaction);
+            _reactionService.ReactionFromAction(user, actionReaction);
         }
         return Ok();
     }
@@ -43,7 +45,7 @@ public class DailymotionController : Controller
             JObject json = JObject.Parse(txt);
             var actionReaction = _actionReactionService.FindDailymotionActReact("video.created", (string)json["data"]["owner_id"]);
             var user = _userService.GetUserById(actionReaction.UserId);
-            _actionReactionService.ReactionFromAction(user, actionReaction);
+            _reactionService.ReactionFromAction(user, actionReaction);
         }
         return Ok();
     }
@@ -57,7 +59,7 @@ public class DailymotionController : Controller
             JObject json = JObject.Parse(txt);
             var actionReaction = _actionReactionService.FindDailymotionActReact("video.deleted", (string)json["data"]["owner_id"]);
             var user = _userService.GetUserById(actionReaction.UserId);
-            _actionReactionService.ReactionFromAction(user, actionReaction);
+            _reactionService.ReactionFromAction(user, actionReaction);
         }
         return Ok();
     }
@@ -71,7 +73,7 @@ public class DailymotionController : Controller
             JObject json = JObject.Parse(txt);
             var actionReaction = _actionReactionService.FindDailymotionActReact("video.format.ready", (string)json["data"]["owner_id"]);
             var user = _userService.GetUserById(actionReaction.UserId);
-            _actionReactionService.ReactionFromAction(user, actionReaction);
+            _reactionService.ReactionFromAction(user, actionReaction);
         }
         return Ok();
     }

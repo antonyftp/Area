@@ -1,17 +1,13 @@
 import 'package:area/constants/area_theme.dart';
-import 'package:area/constants/settings.dart';
 import 'package:area/controllers/backend.dart';
 import 'package:area/screens/home/home.dart';
-import 'package:area/screens/oauth_link.dart';
-import 'package:area/utils/AreaDialog.dart';
+import 'package:area/utils/area_dialog.dart';
 import 'package:area/widgets/area_icon_button.dart';
 import 'package:area/widgets/area_input_field.dart';
 import 'package:area/widgets/area_raised_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class SignInTab extends StatefulWidget {
   const SignInTab({Key? key}) : super(key: key);
@@ -39,7 +35,12 @@ class _SignInTabState extends State<SignInTab> {
 
   _signInWithGoogle() async {
     Get.back();
-    GoogleSignIn _googleSignIn = GoogleSignIn();
+    GoogleSignIn _googleSignIn = GoogleSignIn(
+      scopes: [
+        'https://www.googleapis.com/auth/userinfo.email',
+        'https://mail.google.com/',
+      ],
+    );
     try {
       final user =  await _googleSignIn.signIn();
       Get.printInfo(info: user!.displayName!.toString());

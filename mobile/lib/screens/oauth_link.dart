@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:area/utils/AreaDialog.dart';
+import 'package:area/utils/area_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -49,6 +49,7 @@ class _OAuthLinkState extends State<OAuthLink> {
             Get.printInfo(info: "Callback: ${request.url}");
             Get.printInfo(info: "$_serviceName code: $code");
             final res = await Get.arguments["backendFunction"](code);
+            Get.arguments["updateServices"]();
             Get.back();
             if (res != null) {
               AreaDialog.show(title: "Error", message: "Oops ! Something went wrong when getting $_serviceName token. Please try again.");

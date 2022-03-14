@@ -13,23 +13,13 @@ export default function TrelloCallback() {
     const navigate = useNavigate();
     const {currentUser, setCurrentUser, trello} = useAuth()
 
-    const checkCurrentUser = (): string => {
-        if (!currentUser) {
-            const local = getUser();
-            setCurrentUser(local);
-            return local.token
-        }
-        return currentUser.token
-    }
-
     const doFunc = async () => {
         const url = window.location.href
         const code = url.slice(url.indexOf("token=") + 6)
-        const res = checkCurrentUser()
         const codee = JSON.stringify({
             code
         })
-        await trello(res, codee)
+        await trello(codee)
     }
 
     useEffect( () => {

@@ -70,45 +70,19 @@
     {
         "Name": "Weather",
         "Actions": [{
-            "Name": "TemperatureAboveValue",
-            "Description": "Trigger when the temperature is above a value",
+            "Name": "TemperatureBelowValue",
+            "Description": "Trigger when the temperature is below a value",
             "Params": [
                 {"Name": "City", "Type": "string", "Description": "City where the temperature is measured"},
                 {"Name": "Value", "Type": "number", "Description": "Value that the temperature must be above"}
             ],
             "Variables": []
-        },
-            {
-                "Name": "TemperatureBelowValue",
-                "Description": "Trigger when the temperature is below a value",
-                "Params": [
-                    {"Name": "City", "Type": "string", "Description": "City where the temperature is measured"},
-                    {"Name": "Value", "Type": "number", "Description": "Value that the temperature must be below"}
-                ],
-                "Variables": []
-            },
-            {
-                "Name": "WeatherSunny",
-                "Description": "Trigger when the weather is sunny",
-                "Params": [
-                    {"Name": "City", "Type": "string", "Description": "City where the weather is measured"}
-                ],
-                "Variables": []
             },
             {
                 "Name": "WeatherRainy",
                 "Description": "Trigger when the weather is rainy",
                 "Params": [
                     {"Name": "City", "Type": "string", "Description": "City where the weather is measured"}
-                ],
-                "Variables": []
-            },
-            {
-                "Name": "AirQualityAboveValue",
-                "Description": "Trigger when the air quality is above a value",
-                "Params": [
-                    {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
-                    {"Name": "Value", "Type": "number", "Description": "Value that the air quality must be above"}
                 ],
                 "Variables": []
             },
@@ -122,29 +96,11 @@
                 "Variables": []
             },
             {
-                "Name": "UVIndexAboveValue",
-                "Description": "Trigger when the UV index is above a value",
-                "Params": [
-                    {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
-                    {"Name": "Value", "Type": "number", "Description": "Value that the UV index must be above"}
-                ],
-                "Variables": []
-            },
-            {
                 "Name": "UVIndexBelowValue",
                 "Description": "Trigger when the UV index is below a value",
                 "Params": [
                     {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
                     {"Name": "Value", "Type": "number", "Description": "Value that the UV index must be below"}
-                ],
-                "Variables": []
-            },
-            {
-                "Name": "CloudCoverAboveValue",
-                "Description": "Trigger when the cloud cover is above a value",
-                "Params": [
-                    {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
-                    {"Name": "Value", "Type": "number", "Description": "Value that the cloud cover must be above"}
                 ],
                 "Variables": []
             },
@@ -158,14 +114,6 @@
                 "Variables": []
             },
             {
-                "Name": "WindSpeedAboveValue",
-                "Description": "Trigger when the wind speed is above a value",
-                "Params": [
-                    {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
-                    {"Name": "Value", "Type": "number", "Description": "Value that the wind speed must be above"}
-                ],
-                "Variables": []
-            },{
                 "Name": "WindSpeedBelowValue",
                 "Description": "Trigger when the wind speed is below a value",
                 "Params": [
@@ -173,15 +121,8 @@
                     {"Name": "Value", "Type": "number", "Description": "Value that the wind speed must be below"}
                 ],
                 "Variables": []
-            },{
-                "Name": "RainPercentageAboveValue",
-                "Description": "Trigger when the rain percentage is above a value",
-                "Params": [
-                    {"Name": "City", "Type": "string", "Description": "City where the air quality is measured"},
-                    {"Name": "Value", "Type": "number", "Description": "Value that the rain percentage must be above"}
-                ],
-                "Variables": []
-            },{
+            },
+            {
                 "Name": "RainPercentageBelowValue",
                 "Description": "Trigger when the rain percentage is below a value",
                 "Params": [

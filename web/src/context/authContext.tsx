@@ -1,14 +1,20 @@
-import {createContext, useContext, useState} from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import axios, {AxiosResponse} from "axios";
 import {getEndpoint, getUser, resetUser, setEndpoint, setUser} from "../utils/localStorage";
 import {Nullable} from "../utils/nullable";
 import {axiosInstance} from "../utils/axios";
+import { Url } from "../utils/url";
 
 interface IUser {
     name: string,
     email: string,
     token: string,
     id: string,
+    githubConnected: boolean
+    discordConnected: boolean
+    googleConnected: boolean
+    trelloConnected: boolean
+    dailymotionConnected: boolean
 }
 
 export type User = Nullable<IUser>
@@ -21,6 +27,14 @@ export type Endpoint = Nullable<IEndpoint>
 
 const AuthContext = createContext(undefined as any);
 
+export enum EOAuth {
+    Github = "Github",
+    Google = "Google",
+    Discord = "Discord",
+    Dailymotion = "Dailymotion",
+    Trello = "Trello"
+}
+
 type ProviderAuthT = {
     currentUser: User;
     currentEndpoint: Endpoint;
@@ -30,24 +44,24 @@ type ProviderAuthT = {
     signin: (email: string, password: string) => Promise<AxiosResponse<any>>;
     changeEndpoint: (newEndpoint: string) => Promise<AxiosResponse<any>>;
     signinWithGoogle: (email: string, name: string, access_token: string) => Promise<AxiosResponse<any>>;
-    github: (res: string, code: string) => Promise<AxiosResponse<any>>;
-    discord: (res: string, code: string) => Promise<AxiosResponse<any>>;
-    trello: (res: string, code: string) => Promise<AxiosResponse<any>>;
-    dailymotion: (res: string, code: string) => Promise<AxiosResponse<any>>;
-    google: (res: string, access_token: string) => Promise<AxiosResponse<any>>;
+    github: (code: string) => Promise<AxiosResponse<any>>;
+    discord: (code: string) => Promise<AxiosResponse<any>>;
+    trello: (code: string) => Promise<AxiosResponse<any>>;
+    dailymotion: (code: string) => Promise<AxiosResponse<any>>;
+    google: (access_token: string) => Promise<AxiosResponse<any>>;
     getAbout: () => Promise<AxiosResponse<any>>;
-    user: (res: string) => Promise<AxiosResponse<any>>;
-    add: (res: string, name: string, actionService: string, action: string, reactionService: string, reaction: string, actionParams: object, reactionParams: object) => Promise<AxiosResponse<any>>;
-    update: (res: string, id: string, name: string, actionParams: object, reactionParams: object) => Promise<AxiosResponse<any>>;
-    remove: (res: string, id: string) => Promise<AxiosResponse<any>>;
-    githubAuthorize: (res: string) => Promise<AxiosResponse<any>>;
-    discordAuthorize: (res: string) => Promise<AxiosResponse<any>>;
-    googleAuthorize: (res: string) => Promise<AxiosResponse<any>>;
-    trelloAuthorize: (res: string) => Promise<AxiosResponse<any>>;
-    dailymotionAuthorize: (res: string) => Promise<AxiosResponse<any>>;
+    user: () => Promise<void>;
+    add: (name: string, actionService: string, action: string, reactionService: string, reaction: string, actionParams: object, reactionParams: object) => Promise<AxiosResponse<any>>;
+    fetchActionsReactions: () => any;
+    update: (id: string, name: string, actionParams: object, reactionParams: object) => Promise<AxiosResponse<any>>;
+    remove: (id: string) => Promise<AxiosResponse<any>>;
+    githubAuthorize: () => Promise<AxiosResponse<any>>;
+    discordAuthorize: () => Promise<AxiosResponse<any>>;
+    googleAuthorize: () => Promise<AxiosResponse<any>>;
+    trelloAuthorize: () => Promise<AxiosResponse<any>>;
+    dailymotionAuthorize: () => Promise<AxiosResponse<any>>;
     logout: () => void;
-    retreiveUser: () => Nullable<User>
-    retreiveEndpoint: () => Nullable<Endpoint>
+    signOutFromService: (name: EOAuth) => void;
 };
 
 export const useAuth = (): ProviderAuthT => {
@@ -59,27 +73,72 @@ interface IProps {
 }
 
 export const AuthProvider = (props: IProps) => {
-    const [currentUser, setCurrentUser] = useState(null as Nullable<User>);
+    const [currentUser, setCurrentUser] = useState(getUser() as User);
     const [currentEndpoint, setCurrentEndpoint] = useState(null as Nullable<Endpoint>);
     const [loading, setLoading] = useState(false);
 
+    useEffect(() => {
+        if (Url.getPathName() == "/signin" || Url.getPathName() == "/signup") {
+            if (currentUser) {
+                Url.replacePathName("/")
+            }
+        } else {
+            if (!currentUser) {
+                Url.replacePathName("/signin")
+            }
+        }
+    }, [currentUser])
+
     const signin = async (email: string, password: string) => {
         const res = await axiosInstance.post("Authentication/login", {email, password});
-        const userData = res.data;
-        setCurrentUser({name: userData.user.name, token: userData.token, email: userData.user.email, id: userData.user.id});
-        setUser({name: userData.user.name, token: userData.token, email: userData.user.email, id: userData.user.id});
+        setUserFromBack(res.data.user, res.data.token)
     };
+
+
+    const signinWithGoogle = async (email: string, name: string, access_token: string) => {
+        const res = await axiosInstance.post("Authentication/loginWithGoogle", {
+            name,
+            email,
+            access_token
+        });
+        setUserFromBack(res.data.user, res.data.token)
+    }
+
+    const signup = async (email: string, password: string, name: string) => {
+        return axiosInstance.post("Authentication/register", {email, password, name});
+    };
+
+    const logout = () => {
+        setCurrentUser(null)
+        resetUser()
+    }
+
+    const signOutFromService = async (name: EOAuth) => {
+        try {
+            await axiosInstance.post("OAuth/signOutFrom" + name, {}, {
+                headers: {
+                    "Authorization": `Bearer ${currentUser!.token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+            const user = {...currentUser, [`${name.toLowerCase()}Connected`]: false } as User
+            setCurrentUser(user);
+            setUser(user);
+        } catch (e) {
+            console.error(e)
+        }
+    }
 
     const changeEndpoint = async (newEndpoint: string) => {
         setCurrentEndpoint({endpoint: newEndpoint});
         setEndpoint({endpoint: newEndpoint});
     };
 
-    const github = async (res: string, code: string) => {
+    const github = async (code: string) => {
         try {
             const response = await axiosInstance.post("OAuth/getGithubAccessToken", code, {
                 headers: {
-                    "Authorization": `Bearer ${res}`,
+                    "Authorization": `Bearer ${currentUser!.token}`,
                     "Content-Type": "application/json"
                 }
             });
@@ -90,11 +149,11 @@ export const AuthProvider = (props: IProps) => {
         }
     };
 
-    const discord = async (res: string, code: string) => {
+    const discord = async (code: string) => {
         try {
             const response = await axiosInstance.post("OAuth/getDiscordAccessToken", code, {
                 headers: {
-                    "Authorization": `Bearer ${res}`,
+                    "Authorization": `Bearer ${currentUser!.token}`,
                     "Content-Type": "application/json"
                 }
             });
@@ -105,11 +164,11 @@ export const AuthProvider = (props: IProps) => {
         }
     };
 
-    const trello = async (res: string, code: string) => {
+    const trello = async (code: string) => {
         try {
             const response = await axiosInstance.post("OAuth/storeTrelloAccessToken", code, {
                 headers: {
-                    "Authorization": `Bearer ${res}`,
+                    "Authorization": `Bearer ${currentUser!.token}`,
                     "Content-Type": "application/json"
                 }
             });
@@ -120,11 +179,11 @@ export const AuthProvider = (props: IProps) => {
         }
     };
 
-    const dailymotion = async (res: string, code: string) => {
+    const dailymotion = async (code: string) => {
         try {
             const response = await axiosInstance.post("OAuth/getDailymotionAccessToken", code, {
                 headers: {
-                    "Authorization": `Bearer ${res}`,
+                    "Authorization": `Bearer ${currentUser!.token}`,
                     "Content-Type": "application/json"
                 }
             });
@@ -135,11 +194,11 @@ export const AuthProvider = (props: IProps) => {
         }
     };
 
-    const google = async (res: string, access_token: string) => {
+    const google = async (access_token: string) => {
         try {
             const response = await axiosInstance.post("OAuth/storeGoogleAccessToken", access_token, {
                 headers: {
-                    "Authorization": `Bearer ${res}`,
+                    "Authorization": `Bearer ${currentUser!.token}`,
                     "Content-Type": "application/json"
                 }
             });
@@ -158,18 +217,47 @@ export const AuthProvider = (props: IProps) => {
         }
     };
 
-    const user = async (res: string) => {
+    const setUserFromBack = (data: any, token: string) => {
+        const user: User = data ? {
+            name: data.name,
+            token: token,
+            email: data.email,
+            id: data.id,
+            githubConnected: data.githubOAuth !== null,
+            discordConnected: data.discordOAuth !== null,
+            googleConnected: data.googleOAuth !== null,
+            trelloConnected: data.trelloOAuth !== null,
+            dailymotionConnected: data.dailymotionOAuth !== null
+        } : null;
+        setCurrentUser(user);
+        setUser(user);
+    }
+
+    const user = async () => {
         try {
-            return axiosInstance.get("/User/getUser", {
+            const res = await axiosInstance.get("/User/getUser", {
                 headers: {
-                    "Authorization": `Bearer ${res}`,
-                }})
+                "Authorization": `Bearer ${currentUser!.token}`,
+            }})
+            setUserFromBack(res.data, currentUser!.token);
         } catch (error) {
             console.error(error);
         }
     };
 
-    const add = async (res: string, name: string, actionService: string, action: string, reactionService: string, reaction: string, actionParams: object, reactionParams: object) => {
+    const fetchActionsReactions = async () => {
+        try {
+            const res = await axiosInstance.get("/User/getUser", {
+                headers: {
+                    "Authorization": `Bearer ${currentUser!.token}`,
+                }})
+            return res.data.actionsReactions
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const add = async (name: string, actionService: string, action: string, reactionService: string, reaction: string, actionParams: object, reactionParams: object) => {
         try {
             return axiosInstance.post("/User/addActionService", JSON.stringify({
                 "name": name,
@@ -181,7 +269,7 @@ export const AuthProvider = (props: IProps) => {
                 "paramsReaction": reactionParams
             }), {
                 headers: {
-                    "Authorization": `Bearer ${res}`,
+                    "Authorization": `Bearer ${currentUser!.token}`,
                     "Content-Type": "application/json"
                 }
             });
@@ -190,7 +278,7 @@ export const AuthProvider = (props: IProps) => {
         }
     };
 
-    const update = async (res: string, id: string, name: string, actionParams: object, reactionParams: object) => {
+    const update = async (id: string, name: string, actionParams: object, reactionParams: object) => {
         try {
             return axiosInstance.post("/User/updateActionService", JSON.stringify({
                     "actionReactionId": id,
@@ -199,7 +287,7 @@ export const AuthProvider = (props: IProps) => {
                     "paramsReaction": reactionParams
                 }), {
                     headers: {
-                        "Authorization": `Bearer ${res}`,
+                        "Authorization": `Bearer ${currentUser!.token}`,
                         "Content-Type": "application/json"
                     }
                 });
@@ -208,13 +296,13 @@ export const AuthProvider = (props: IProps) => {
         }
     };
 
-    const remove = async (res: string, id: string) => {
+    const remove = async (id: string) => {
         try {
             return axiosInstance.post("/User/removeActionService", JSON.stringify({
                 "actionReactionId": id
             }), {
                 headers: {
-                    "Authorization": `Bearer ${res}`,
+                    "Authorization": `Bearer ${currentUser!.token}`,
                         "Content-Type": "application/json"
                 }
             });
@@ -223,11 +311,11 @@ export const AuthProvider = (props: IProps) => {
         }
     };
 
-    const githubAuthorize = async (res: string) => {
+    const githubAuthorize = async () => {
         try {
             return axiosInstance.get("/OAuth/getGithubAuthorizeUrl", {
                 headers: {
-                    "Authorization": `Bearer ${res}`
+                    "Authorization": `Bearer ${currentUser!.token}`
                 }
             });
         } catch (error) {
@@ -235,11 +323,11 @@ export const AuthProvider = (props: IProps) => {
         }
     }
 
-    const discordAuthorize = async (res: string) => {
+    const discordAuthorize = async () => {
         try {
             return axiosInstance.get("/OAuth/getDiscordAuthorizeUrl", {
                 headers: {
-                    "Authorization": `Bearer ${res}`
+                    "Authorization": `Bearer ${currentUser!.token}`
                 }
             });
         } catch (error) {
@@ -247,11 +335,11 @@ export const AuthProvider = (props: IProps) => {
         }
     }
 
-    const googleAuthorize = async (res: string) => {
+    const googleAuthorize = async () => {
         try {
             return axiosInstance.get("/OAuth/getGoogleCredentials", {
                 headers: {
-                    "Authorization": `Bearer ${res}`
+                    "Authorization": `Bearer ${currentUser!.token}`
                 }
             });
         } catch (error) {
@@ -259,11 +347,11 @@ export const AuthProvider = (props: IProps) => {
         }
     }
 
-    const trelloAuthorize = async (res: string) => {
+    const trelloAuthorize = async () => {
         try {
             return axiosInstance.get("/OAuth/getTrelloAuthorizeUrl", {
                 headers: {
-                    "Authorization": `Bearer ${res}`
+                    "Authorization": `Bearer ${currentUser!.token}`
                 }
             });
         } catch (error) {
@@ -271,46 +359,21 @@ export const AuthProvider = (props: IProps) => {
         }
     }
 
-    const dailymotionAuthorize = async (res: string) => {
+    const dailymotionAuthorize = async () => {
         try {
             return axiosInstance.get("/OAuth/getDailymotionAuthorizeUrl", {
                 headers: {
-                    "Authorization": `Bearer ${res}`
+                    "Authorization": `Bearer ${currentUser!.token}`
                 }
             });
         } catch (error) {
             console.error(error);
         }
-    }
-
-    const signinWithGoogle = async (email: string, name: string, access_token: string) => {
-        const res = await axiosInstance.post("Authentication/loginWithGoogle", {
-            name,
-            email,
-            access_token
-        });
-        const userData = res.data;
-        setCurrentUser({name: userData.user.name, token: userData.token, email: userData.user.email, id: userData.user.id});
-        setUser({name: userData.user.name, token: userData.token, email: userData.user.email, id: userData.user.id});
-    }
-
-    const signup = async (email: string, password: string, name: string) => {
-        return axiosInstance.post("Authentication/register", {email, password, name});
-    };
-
-    const logout = () => {
-        setCurrentUser(null)
-        resetUser()
-    }
-
-    const retreiveUser = () => {
-        const user = currentUser || getUser()
-        setCurrentUser(user);
-        return user
     }
 
     const value = {
         currentUser,
+        fetchActionsReactions,
         setCurrentUser,
         currentEndpoint,
         setCurrentEndpoint,
@@ -333,8 +396,8 @@ export const AuthProvider = (props: IProps) => {
         remove,
         signup,
         logout,
-        retreiveUser,
-        signinWithGoogle
+        signinWithGoogle,
+        signOutFromService
     };
 
     return <AuthContext.Provider value={value}>{!loading && props.children}</AuthContext.Provider>;

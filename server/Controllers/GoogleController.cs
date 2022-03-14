@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using Area.Services;
 using Area.Services.OAuthService;
+using Area.Utils;
 
 namespace Area.Controllers
 {
@@ -13,16 +14,12 @@ namespace Area.Controllers
     public class GoogleController : Controller
     {
         private readonly ActionReactionService _actionReactionService;
-        public class mailData
-        {
-            public string To { get; set; }
-            public string Subject { get; set; } = string.Empty;
-            public string Body { get; set; } = string.Empty;
-        }
+        private readonly UserService _userService;
         private readonly GoogleService _googleService;
-
-        public GoogleController(GoogleService service, ActionReactionService actionReactionService)
+        
+        public GoogleController(GoogleService service, ActionReactionService actionReactionService, UserService userService)
         {
+            _userService = userService;
             _googleService = service;
             _actionReactionService = actionReactionService;
         }
@@ -30,8 +27,13 @@ namespace Area.Controllers
         [HttpPost("test")]
         public ActionResult GetNbMail()
         {
-            var test = _actionReactionService.GetById("62273fc41b725e8dadd18a57");
-            _googleService.SendMail(test);
+            var test = _actionReactionService.GetById("622d0e3a731e9cf70dacc340");
+            _googleService.SetClientCredentials(test.UserId);
+            var user = _userService.GetUserById(test.UserId);
+            _googleService.SendMail(test, user);
+            //var value = test.ParamsAction?.GetValueOrDefault("Value");
+            //string? result = _googleService.GetMailList(user, value).Result;
+            //Console.WriteLine(result ?? "null");
             return Ok();
         }
     }

@@ -11,5 +11,6 @@ public class Message
     static public string ALREADY_REGISTER = "User is already registered";
     static public string INVALID_EMAIL_OR_PASSWORD = "Email or password is incorrect";
     static public string FAILED_TO_LOGIN = "Failed to login";
+    static public string CANNOT_GET_USER = "Failed to get user";
     static public string ERROR = Message.ERROR;
 }

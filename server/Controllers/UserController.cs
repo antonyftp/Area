@@ -73,7 +73,6 @@ public class UserController : Controller
         if (id == null)
             return BadRequest(Message.NOT_LOGGED);
         var user = _userService.GetUserById(id);
-        Debug.WriteClass(user);
         user.ActionsReactions = _actionReactionService.GetUserActionReaction(id);
         return Ok(user);
     }
@@ -99,7 +98,8 @@ public class UserController : Controller
                 ReactionService = req.ReactionService,
                 UserId = id
             };
-            _oauthService.SetupActionReaction(actionReaction);
+            if (actionReaction.Action != "Weather" && actionReaction.Action != "Pornhub")
+                _oauthService.SetupActionReaction(actionReaction);
             ActionReaction res = _actionReactionService.Add(actionReaction);
             return Ok(res);
         } catch (Exception e) {

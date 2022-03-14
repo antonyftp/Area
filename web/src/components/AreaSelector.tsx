@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {useState} from "react";
+import { useEffect, useState } from "react";
 import colors from "./../jsons/colors.json"
 import Select from '@mui/material/Select';
 import MenuItem from "@mui/material/MenuItem";
@@ -51,7 +51,7 @@ export default function AreaSelector(props: IProps) {
         <FormControl>
             <InputLabel sx={{color: colors.White, fontFamily: "Montserrat"}} id="demo-simple-select-label">{title}</InputLabel>
             <Select disabled={props.modifying} MenuProps={{classes: {paper: classes.paper}}} value={props.value} label={title} sx={{fontFamily: "Montserrat", color: color, width: width, height: height, borderRadius: radius, marginBottom: marginBottom, background: backgroundColor}} onChange={(val) => {props.onChange(val.target.value)}}>
-                {props.items.map((item, idx) => (
+                {props.items && props.items.length > 0 && props.items.map((item, idx) => (
                     <MenuItem className={classes.input} key={idx + 1} value={item}>{item}</MenuItem>
                 ))}
             </Select>

@@ -5,7 +5,7 @@ async function Worker(arg) {
     try {
         await axios.post("http://dotnet:80/Worker");
     } catch (error) {
-        console.log(error)
+        console.log(error.response)
     }
 }
 

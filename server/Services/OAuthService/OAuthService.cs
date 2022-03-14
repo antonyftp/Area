@@ -74,6 +74,8 @@ public class OAuthService
                     throw new Exception(Message.NOT_LOGGED_TO_DAILYMOTION);
                 _dailymotionService.AddActionReaction(actionReaction);
                 break;
+            case "Weather": break;
+            case "Pornhub": break;
             default:
                 throw new BadHttpRequestException(actionReaction.ActionService + " doesn't exist");
         }

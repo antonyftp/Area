@@ -22,10 +22,14 @@ export type IParam = {name: string, description: string}
 export type IParams = IParam[]
 
 export interface IActions{
+    name: string,
+    description: string,
     actions: IParams
 }
 
 export interface IReactions{
+    name: string,
+    description: string,
     reactions: IParams
 }
 
@@ -49,21 +53,23 @@ export type IActionReactionParam = {name: string, value: string}
 export type IActionReactionParams = Nullable<IActionReactionParam[]>
 
 interface IProps {
-    actionsReactions: Nullable<IUserActionsReactions>,
-    setActionsReactions: (newActionsReactions: Nullable<IUserActionsReactions>) => void
+    actionsReactions: Nullable<IActionsReactions[]>,
+    setActionsReactions: (newActionsReactions: Nullable<IActionsReactions[]>) => void
     actionReaction: Nullable<IActionsReactions>
     setActionReaction: (newActionReaction: Nullable<IActionsReactions>) => void
 }
 
+const FormInitialState = {
+    areaName: "",
+    actionService: "",
+    action: "",
+    reactionService: "",
+    reaction: ""
+}
+
 export default function AddArea(props: IProps) {
+    const [maxWidth] = useState<DialogProps['maxWidth']>('xl');
     const [open, setOpen] = useState(false);
-    const [fullWidth, setFullWidth] = useState(true);
-    const [maxWidth, setMaxWidth] = useState<DialogProps['maxWidth']>('xl');
-    const [selectedActionService, setSelectedActionService] = useState("");
-    const [selectedReactionService, setSelectedReactionService] = useState("");
-    const [selectedAction, setSelectedAction] = useState("");
-    const [selectedReaction, setSelectedReaction] = useState("");
-    const [areaName, setAreaName] = useState("");
     const [part, setPart] = useState(1)
     const [variables, setVariables] = useState([{name: "temp", description: "temp"}])
     const [actionsParams, setActionsParams] = useState([{name: "temp", description: "temp"}])
@@ -73,23 +79,75 @@ export default function AddArea(props: IProps) {
     const [reactionsParamsValues, setReactionsParamsValues] = useState([{name: "none", value: "none"}])
     const [reactionsParamsValuesFormatted, setReactionsParamsValuesFormatted] = useState({} as {})
     const [about, setAbout] = useState(null as Nullable<IAboutJson>);
-    const {currentUser, setCurrentUser, getAbout, user, add, update, remove} = useAuth()
+    const {currentUser, getAbout, user, add, update, remove, fetchActionsReactions} = useAuth()
     const [modif, setModif] = useState(false)
-    const [oauthConnected, setOauthConnected] = useState({"Github": false, "Discord": false, "Gmail": false, "Trello": false, "Dailymotion": false})
+
+    const [form, setForm] = useState(FormInitialState)
+    const [services, setServices] = useState([] as string[])
+    const [actions, setActions] = useState([] as string[])
+    const [reactions, setReactions] = useState([] as string[])
+
+    const getServices = () => {
+        const googleServices = ["gmail"]
+        const publicServices = ["pornhub", "weather"]
+
+        const availableServices = about?.server.services.reduce((acc, cur) => {
+            const serviceLowercase = cur.name.toLowerCase()
+            if (publicServices.some(e => e == serviceLowercase))
+                return [...acc, cur.name]
+            const key = serviceLowercase + "Connected" as keyof typeof currentUser
+            if (currentUser![key] || (googleServices.some(e => e == serviceLowercase) && currentUser!["googleConnected"]))
+                return [...acc, cur.name]
+            return acc;
+        }, [] as string[])
+        setServices(availableServices!);
+    }
+
+    const getActionsFromActionService = (name: string) => {
+        const availableActions = about?.server.services.find(e => e.name === name)?.actions.reduce((acc, cur) => [...acc, cur.name], [] as string[])
+        if (availableActions)
+            setActions(availableActions);
+    }
+
+    const getReactionsFromReactionService = (name: string) => {
+        const availableReactions = about?.server.services.find(e => e.name === name)?.reactions.reduce((acc, cur) => [...acc, cur.name], [] as string[])
+        if (availableReactions)
+            setReactions(availableReactions);
+    }
+
+    useEffect(() => {
+        getServices()
+    }, [about])
+
+    useEffect(() => {
+        (async () => {
+            const res = await getAbout()
+            setAbout(res.data)
+            await user()
+        })()
+    }, [])
 
     useEffect(() => {
         if (props.actionReaction != null) {
             setOpen(true)
             setModif(true)
-            setSelectedActionService(props.actionReaction.actionService)
-            setSelectedReactionService(props.actionReaction.reactionService)
-            setSelectedAction(props.actionReaction.action)
-            setSelectedReaction(props.actionReaction.reaction)
-            setAreaName(props.actionReaction.name)
-            if (props.actionReaction.paramsAction !== null)
-                setActionsParamsValuesModify(formatActionParamsToArray(props.actionReaction.paramsAction))
-            if (props.actionReaction.paramsReaction !== null)
-                setReactionsParamsValuesModify(formatReactionParamsToArray(props.actionReaction.paramsReaction))
+            setForm({
+                areaName: props.actionReaction.name,
+                actionService: props.actionReaction.actionService,
+                action: props.actionReaction.action,
+                reactionService: props.actionReaction.reactionService,
+                reaction: props.actionReaction.reaction
+            })
+            if (props.actionReaction.paramsAction !== null) {
+                const params = Object.keys(props.actionReaction.paramsAction).map(key => ({name: key, value: props.actionReaction!.paramsAction![key]}))
+                if (params)
+                    setActionsParamsValues(params);
+            }
+            if (props.actionReaction.paramsReaction !== null) {
+                const params = Object.keys(props.actionReaction.paramsReaction).map(key => ({name: key, value: props.actionReaction!.paramsReaction![key]}))
+                if (params)
+                    setActionsParamsValues(params);
+            }
         }
     },[props.actionReaction]);
 
@@ -97,40 +155,6 @@ export default function AddArea(props: IProps) {
         formatActionsParams()
         formatReactionsParams()
     },[actionsParamsValues, reactionsParamsValues]);
-
-    const formatActionParamsToArray = (item: any) : IActionReactionParams => {
-        let tmp = [] as {name: string, value: string}[];
-
-        for(let key in item)
-            tmp.push({name: key, value: item[key]})
-        return tmp
-    }
-
-    const formatReactionParamsToArray = (item: any) : IActionReactionParams=> {
-        let tmp = [] as {name: string, value: string}[];
-
-        for(let key in item)
-            tmp.push({name: key, value: item[key]})
-        return tmp
-    }
-
-    const setActionsParamsValuesModify = (params: Nullable<IActionReactionParams>) => {
-        if (params !== null)
-            setActionsParamsValues(params)
-    }
-
-    const setReactionsParamsValuesModify = (params: Nullable<IActionReactionParams>) => {
-        if (params !== null)
-            setReactionsParamsValues(params)
-    }
-
-    useEffect(() => {
-        (async () => {
-            const res = await getAbout()
-            setAbout(res.data)
-            await getOAuthStatus()
-        })()
-    },[]);
 
     useEffect(() => {
         if (open && part === 2) {
@@ -140,77 +164,23 @@ export default function AddArea(props: IProps) {
         }
     },[part]);
 
-    const getActionsReactionsInfos = async () : Promise<any> => {
-        const res = await checkCurrentUser()
-        const response = await user(res)
-        if (response.status === 200)
-            return response.data
-        return props.actionsReactions
-    }
-
-    const getOAuthStatus = async () => {
+    const getActionsReactionsInfos = async () => {
         try {
-            const res = await checkCurrentUser()
-            const response = await user(res)
-            if (response.status === 200) {
-                if (response.data.githubOAuth !== null)
-                    setOauthConnected({...oauthConnected, ["Github"] : true})
-                else
-                    setOauthConnected({...oauthConnected, ["Github"] : false})
-                if (response.data.discordOAuth !== null)
-                    setOauthConnected({...oauthConnected, ["Discord"] : true})
-                else
-                    setOauthConnected({...oauthConnected, ["Discord"] : false})
-                if (response.data.googleOAuth !== null)
-                    setOauthConnected({...oauthConnected, ["Gmail"] : true})
-                else
-                    setOauthConnected({...oauthConnected, ["Gmail"] : false})
-                if (response.data.trelloOAuth !== null)
-                    setOauthConnected({...oauthConnected, ["Trello"] : true})
-                else
-                    setOauthConnected({...oauthConnected, ["Trello"] : false})
-                if (response.data.dailymotionOAuth !== null)
-                    setOauthConnected({...oauthConnected, ["Dailymotion"] : true})
-                else
-                    setOauthConnected({...oauthConnected, ["Dailymotion"] : false})
-            }
-        } catch (error) {
-            console.error(error);
+            props.setActionsReactions(await fetchActionsReactions())
+        } catch (e) {
+            console.log(e)
         }
     }
 
-    const getServices = (): string[] => {
-        let services = [] as string[];
 
-        about?.server.services.forEach((service: any) => {
-            // const keyTyped = service.name as keyof typeof oauthConnected;
-            // if (oauthConnected[keyTyped])
-            //     services.push(service.name)
-            // else if (oauthConnected.hasOwnProperty(service.name) === false)
-                services.push(service.name)
-        });
-        return services
-    }
-
-    const getActions = (): string[] => {
-        let actions = [] as string[];
-
-        about?.server.services.forEach((service: any) => {
-            service.actions.forEach((action: any) => {
-                if (service.name === selectedActionService)
-                    actions.push(action.name)
-            });
-        });
-        return actions
-    }
 
     const getActionsVariables = (): {name: string, description: string}[] => {
         let actionsVariables = [] as {name: string, description: string}[];
 
         about?.server.services.forEach((service: any) => {
-            if (service.name === selectedActionService)
+            if (service.name === form.actionService)
                 service.actions.forEach((action: any) => {
-                    if (action?.name === selectedAction && action?.variables !== null)
+                    if (action?.name === form.action && action?.variables !== null)
                         action?.variables.forEach((variable: any) => {
                             actionsVariables.push({name: variable?.name, description: variable?.description})
                         });
@@ -223,9 +193,9 @@ export default function AddArea(props: IProps) {
         let actionsParams = [] as {name: string, description: string}[];
 
         about?.server.services.forEach((service: any) => {
-            if (service.name === selectedActionService)
+            if (service.name === form.actionService)
                 service.actions.forEach((reaction: any) => {
-                    if (reaction?.name === selectedAction && reaction?.params !== null)
+                    if (reaction?.name === form.action && reaction?.params !== null)
                         reaction?.params.forEach((param: any) => {
                             actionsParams.push({name: param?.name, description: param?.description})
                         });
@@ -241,7 +211,7 @@ export default function AddArea(props: IProps) {
 
         about?.server.services.forEach((service: any) => {
             service.reactions.forEach((reaction: any) => {
-                if (service.name === selectedReactionService)
+                if (service.name === form.reactionService)
                     reactions.push(reaction.name)
             });
         });
@@ -252,9 +222,9 @@ export default function AddArea(props: IProps) {
         let reactionsParams = [] as {name: string, description: string}[];
 
         about?.server.services.forEach((service: any) => {
-            if (service.name === selectedReactionService)
+            if (service.name === form.reactionService)
                 service.reactions.forEach((reaction: any) => {
-                    if (reaction?.name === selectedReaction && reaction?.params !== null)
+                    if (reaction?.name === form.reaction && reaction?.params !== null)
                         reaction?.params.forEach((param: any) => {
                             reactionsParams.push({name: param?.name, description: param?.description})
                         });
@@ -330,15 +300,11 @@ export default function AddArea(props: IProps) {
                     ok = false
                 }
             })
-        if (ok)
-            return true
-        else
-            return false
+        return ok;
     }
 
     const formatActionsParams = () => {
         let tmp = {} as {}
-
         actionsParamsValues.forEach((item) => {
             if (item.value !== "none" && item.value !== "temp")
                 tmp = {...tmp, [item.name.toString()] : item.value}
@@ -348,21 +314,11 @@ export default function AddArea(props: IProps) {
 
     const formatReactionsParams = () => {
         let tmp = {} as {}
-
         reactionsParamsValues.forEach((item) => {
             if (item.value !== "none" && item.value !== "temp")
                 tmp = {...tmp, [item.name.toString()] : item.value}
         })
         setReactionsParamsValuesFormatted(tmp)
-    }
-
-    function checkCurrentUser() : string{
-        if (!currentUser) {
-            const local = getUser();
-            setCurrentUser(local);
-            return local.token
-        }
-        return currentUser.token
     }
 
     const displayError = () => {
@@ -371,11 +327,7 @@ export default function AddArea(props: IProps) {
 
     const handleClose = () => {
         setOpen(false);
-        setSelectedActionService("")
-        setSelectedReactionService("")
-        setSelectedAction("")
-        setSelectedReaction("")
-        setAreaName("")
+        setForm(FormInitialState)
         setPart(1)
         setModif(false)
         setActionsParamsValues([{name: "none", value: "none"}])
@@ -393,22 +345,42 @@ export default function AddArea(props: IProps) {
             <div style={{marginLeft: "55px", marginTop: "100px", marginBottom: "30px"}}>
                 <AreaButton text={"Add an Area"} width={"200px"} height={"50px"} onClick={() => {setOpen(true)}}/>
             </div>
-            <Dialog fullWidth={fullWidth} maxWidth={maxWidth} open={open} onClose={handleClose} PaperProps={{style: {backgroundColor: colors.LightGray},}}>
+            <Dialog fullWidth={true} maxWidth={maxWidth} open={open} onClose={handleClose} PaperProps={{style: {backgroundColor: colors.LightGray},}}>
                 <DialogTitle color={colors.White}>{modif ? "Modifying an Area" : "Add an Area"}</DialogTitle>
                 {part === 1 ?
                     <DialogContent>
                         <DialogContentText color={colors.White}>{modif ? "You can modify the service and the action you want." : "First select the service you want and the action to check."}</DialogContentText>
                         <DialogContentText color={colors.White}>{modif ? "Then you can modify the service and the reaction you want." : "Then select the service you want and the reaction to do if the action is detected."}</DialogContentText>
                         <Box noValidate component="form" sx={{display: 'flex', flexDirection: 'column', m: 'auto', width: '40%', marginTop: "60px", alignItems: "center"}}>
-                            <AreaInputText value={areaName} marginBottom={"30px"} label={"Area Name"} placeholder={"Area Name"} onChange={(val: string) => {
-                                setAreaName(val)
+                            <AreaInputText value={form.areaName} marginBottom={"30px"} label={"Area Name"} placeholder={"Area Name"} onChange={(val: string) => {
+                                setForm({...form, areaName: val })
                             }}/>
-                            <AreaSelector modifying={modif} title={"Action Service"} items={getServices()} value={selectedActionService} onChange={(val: string) => {setSelectedActionService(val); setSelectedAction("")}}/>
-                            <AreaSelector modifying={modif} title={"Action"} items={getActions()} value={selectedAction} onChange={(val: string) => {setSelectedAction(val)}}/>
-                            <AreaSelector modifying={modif}title={"Reaction Service"} items={getServices()} value={selectedReactionService} onChange={(val: string) => {setSelectedReactionService(val); setSelectedReaction("")}}/>
-                            <AreaSelector modifying={modif} title={"Reaction"} items={getReactions()} value={selectedReaction} onChange={(val: string) => {setSelectedReaction(val)}}/>
+                            <AreaSelector modifying={modif} title={"Action Service"} items={services} value={form.actionService} onChange={(val: string) => {
+                                setForm({...form, ...{
+                                    actionService: val,
+                                    action: ""
+                                }})
+                                getActionsFromActionService(val)
+                            }}/>
+                            <AreaSelector modifying={modif} title={"Action"} items={actions} value={form.action} onChange={(val: string) => {
+                                setForm({...form, ...{
+                                    action: val
+                                }})
+                            }}/>
+                            <AreaSelector modifying={modif}title={"Reaction Service"} items={services} value={form.reactionService} onChange={(val: string) => {
+                                setForm({...form, ...{
+                                    reactionService: val,
+                                    reactions: ""
+                                }})
+                                getReactionsFromReactionService(val)
+                            }}/>
+                            <AreaSelector modifying={modif} title={"Reaction"} items={reactions} value={form.reaction} onChange={(val: string) => {
+                                setForm({...form, ...{
+                                    reaction: val
+                                }})
+                            }}/>
                             <Button variant="contained" sx={{marginTop: "40px", width: "500px"}} onClick={() => {
-                                if (selectedActionService == "" || selectedReactionService == "" || selectedReaction == "" || selectedAction == "" || areaName == "")
+                                if (form.actionService == "" || form.reactionService == "" || form.reaction == "" || form.action == "" || form.areaName == "")
                                     displayError()
                                 else
                                     setPart(2)
@@ -416,19 +388,20 @@ export default function AddArea(props: IProps) {
                         </Box>
                     </DialogContent> : null
                 }
+
                 {part === 2 ?
                     <DialogContent>
                         <DialogContentText color={colors.White}>{modif ? "You can modify the parameters." : "Please fill out the parameters."}</DialogContentText>
                         <Box noValidate component="form" sx={{display: 'flex', flexDirection: 'column', m: 'auto', width: '40%', marginTop: "60px", alignItems: "center"}}>
                             <Box sx={{backgroundColor: colors.DarkGray, width: "500px", borderRadius: "10px", padding: "5px"}}>
                                 <Typography sx={{color: colors.White, textAlign: "center", fontFamily: "Montserrat", fontWeight: "bold"}}>Area Name</Typography>
-                                <Typography sx={{color: colors.White, textAlign: "center", fontFamily: "Montserrat"}}>{areaName}</Typography>
+                                <Typography sx={{color: colors.White, textAlign: "center", fontFamily: "Montserrat"}}>{form.areaName}</Typography>
                             </Box>
                             <Box sx={{backgroundColor: colors.DarkGray, marginTop: "20px", width: "500px", borderRadius: "10px", padding: "5px"}}>
                                 <Typography sx={{color: colors.White, textAlign: "center", fontWeight: "bold", fontFamily: "Montserrat"}}>If</Typography>
-                                <Typography sx={{color: colors.White, textAlign: "center", fontFamily: "Montserrat"}}>{selectedAction+" ("+selectedActionService+")"}</Typography>
+                                <Typography sx={{color: colors.White, textAlign: "center", fontFamily: "Montserrat"}}>{form.action+" ("+form.actionService+")"}</Typography>
                                 <Typography sx={{color: colors.White, textAlign: "center", marginTop: "20px", fontWeight: "bold", fontFamily: "Montserrat"}}>Then</Typography>
-                                <Typography sx={{color: colors.White, textAlign: "center", fontFamily: "Montserrat"}}>{selectedReaction+" ("+selectedReactionService+")"}</Typography>
+                                <Typography sx={{color: colors.White, textAlign: "center", fontFamily: "Montserrat"}}>{form.reaction+" ("+form.reactionService+")"}</Typography>
                             </Box>
                             <Box sx={{backgroundColor: colors.DarkGray, marginTop: "20px", width: "500px", borderRadius: "10px", padding: "5px"}}>
                                 <Typography sx={{color: colors.White, textAlign: "center", fontWeight: "bold", fontFamily: "Montserrat"}}>Action Variables</Typography>
@@ -450,14 +423,13 @@ export default function AddArea(props: IProps) {
                                 <Button variant="contained" sx={{width: "48%", marginLeft: "4%"}} onClick={async () => {
                                     if (checkParamsValuesCompleted())
                                         try {
-                                            const res = await checkCurrentUser()
                                             if (!modif) {
-                                                const response = await add(res, areaName, selectedActionService, selectedAction, selectedReactionService, selectedReaction, actionsParamsValuesFormatted, reactionsParamsValuesFormatted)
-                                                props.setActionsReactions(await getActionsReactionsInfos())
+                                                await add(form.areaName, form.actionService, form.action, form.reactionService, form.reaction, actionsParamsValuesFormatted, reactionsParamsValuesFormatted)
+                                                await getActionsReactionsInfos()
                                                 handleClose()
                                             } else {
-                                                const response = await update(res, props?.actionReaction!.id, areaName, actionsParamsValuesFormatted, reactionsParamsValuesFormatted)
-                                                props.setActionsReactions(await getActionsReactionsInfos())
+                                                await update(props?.actionReaction!.id, form.areaName, actionsParamsValuesFormatted, reactionsParamsValuesFormatted)
+                                                await getActionsReactionsInfos()
                                                 handleClose()
                                             }
                                         } catch (error) {
@@ -467,9 +439,8 @@ export default function AddArea(props: IProps) {
                                 }}>{modif ? "modify area" : "add area"}</Button>
                                 {modif && <RemoveButton variant="contained" sx={{width: "100%", marginTop: "15px"}} onClick={async () => {
                                     try {
-                                        const res = await checkCurrentUser()
-                                        const response = await remove(res, props.actionReaction!.id)
-                                        props.setActionsReactions(await getActionsReactionsInfos())
+                                        await remove(props.actionReaction!.id)
+                                        await getActionsReactionsInfos()
                                         alert(`The Area ${props.actionReaction!.name} has been successfully deteted.`)
                                         handleClose()
                                     } catch (error) {

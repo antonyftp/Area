@@ -58,12 +58,22 @@ public class OAuthController : Controller
                 return BadRequest(Message.NOT_LOGGED);
             GithubService.GetAccessTokenRes res = await _githubService.GetAccessToken(body.code);
             _userService.AddOAuth(id, OAuthEnum.GithubOAuth, res.access_token);
-            _githubService.SetGithubClientCredentials(id);
+            _githubService.SetClientCredentials(id);
             _githubService.updateDbProfileData();            
             return Ok();
         } catch (Exception e) {
             return BadRequest(Message.FAILED_TO_LOGIN);
         }
+    }
+    
+    [HttpPost("signOutFromGithub")]
+    public ActionResult SignOutFromGithub()
+    {
+        string? id = _httpContextAccessor.GetUserIdFromJwt();
+        if (id == null)
+            return BadRequest(Message.NOT_LOGGED);
+        _userService.RemoveOAuth(id, OAuthEnum.GithubOAuth);
+        return Ok();
     }
 
     [HttpGet("getDiscordAuthorizeUrl")]
@@ -86,12 +96,22 @@ public class OAuthController : Controller
         }
     }
 
-    [AllowAnonymous]
+    [HttpPost("signOutFromDiscord")]
+    public ActionResult SignOutFromDiscord()
+    {
+        string? id = _httpContextAccessor.GetUserIdFromJwt();
+        if (id == null)
+            return BadRequest(Message.NOT_LOGGED);
+        _userService.RemoveOAuth(id, OAuthEnum.DiscordOAuth);
+        return Ok();
+    }
+
+    /*[AllowAnonymous]
     [HttpGet("getGoogleAuthorizeUrl")]
     public ActionResult<string> GetGoogleConnectionUrl()
     {
         return Ok(_googleService.GetAuthorizeCodeUrl());
-    }
+    }*/
     
     [AllowAnonymous]
     [HttpGet("getGoogleCredentials")]
@@ -109,7 +129,17 @@ public class OAuthController : Controller
         _userService.AddOAuth(id, OAuthEnum.GoogleOAuth, req.access_token);
         return Ok();
     }
-    
+
+    [HttpPost("signOutFromGoogle")]
+    public ActionResult SignOutFromGoogle()
+    {
+        string? id = _httpContextAccessor.GetUserIdFromJwt();
+        if (id == null)
+            return BadRequest(Message.NOT_LOGGED);
+        _userService.RemoveOAuth(id, OAuthEnum.GoogleOAuth);
+        return Ok();
+    }
+
     [AllowAnonymous]
     [HttpGet("getDailymotionAuthorizeUrl")]
     public ActionResult<string> GetDailymotionConnectionUrl()
@@ -133,7 +163,17 @@ public class OAuthController : Controller
             return BadRequest(Message.FAILED_TO_LOGIN);
         }
     }
-    
+
+    [HttpPost("signOutFromDailymotion")]
+    public ActionResult SignOutFromDailymotion()
+    {
+        string? id = _httpContextAccessor.GetUserIdFromJwt();
+        if (id == null)
+            return BadRequest(Message.NOT_LOGGED);
+        _userService.RemoveOAuth(id, OAuthEnum.DailymotionOAuth);
+        return Ok();
+    }
+
     [AllowAnonymous]
     [HttpGet("getTrelloAuthorizeUrl")]
     public ActionResult<string> GetTrelloConnectionUrl()
@@ -148,6 +188,16 @@ public class OAuthController : Controller
         if (id == null)
             return BadRequest(Message.NOT_LOGGED);
         _userService.AddOAuth(id, OAuthEnum.TrelloOAuth, req.code);
+        return Ok();
+    }
+    
+    [HttpPost("signOutFromTrello")]
+    public ActionResult SignOutFromTrello()
+    {
+        string? id = _httpContextAccessor.GetUserIdFromJwt();
+        if (id == null)
+            return BadRequest(Message.NOT_LOGGED);
+        _userService.RemoveOAuth(id, OAuthEnum.TrelloOAuth);
         return Ok();
     }
 }

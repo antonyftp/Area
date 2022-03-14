@@ -191,7 +191,7 @@ class BackendController {
         });
   }
 
-  static Future<dynamic?> about() async {
+  static Future<dynamic> about() async {
     final prefs = await SharedPreferences.getInstance();
     final aboutUrl = Uri.parse("${prefs.getString("endpoint") ?? Settings.backendEndpoint}/${Settings.aboutRoute}");
     return await http.get(aboutUrl).then((r) {
@@ -275,32 +275,6 @@ class BackendController {
         });
   }
 
-  static Future<String?> sendDiscordCode(String code) async {
-    final prefs = await SharedPreferences.getInstance();
-    final sendDiscordCodeUrl = Uri.parse("${prefs.getString("endpoint") ?? Settings.backendEndpoint}/${Settings.discordCodeRoute}");
-    return await http.post(sendDiscordCodeUrl,
-        headers: {
-          "Authorization": "Bearer ${prefs.getString("jwt")}",
-          "Content-Type": "application/json"
-        },
-        body: jsonEncode({
-          "code": code
-        }))
-        .then((r) async {
-      if (r.statusCode == 200) {
-        Get.printInfo(info: "[BackendController - sendDiscordCode] Post code 200 (success)\nBody: " + r.body.toString());
-        return null;
-      } else {
-        Get.printInfo(info: "[BackendController - sendDiscordCode] Post code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-        return jsonDecode(r.body)["errors"].toString();
-      }
-    })
-        .catchError((e) {
-      Get.printInfo(info: "[BackendController - sendDiscordCode] catchError\nError: " + e.toString());
-      return e.toString();
-    });
-  }
-
   static Future<String?> getGithubOAuthLink() async {
     final prefs = await SharedPreferences.getInstance();
     final getGithubClientIdUrl = Uri.parse("${prefs.getString("endpoint") ?? Settings.backendEndpoint}/${Settings.gitHubUrlRoute}");
@@ -369,27 +343,6 @@ class BackendController {
     });
   }
 
-  static Future<String?> getDiscordAuthUrl() async {
-    final prefs = await SharedPreferences.getInstance();
-    final getDiscordAuthUrl = Uri.parse("${prefs.getString("endpoint") ?? Settings.backendEndpoint}/${Settings.discordAuthUrl}");
-    return await http.get(getDiscordAuthUrl,
-        headers: {
-          "Authorization": "Bearer ${await SharedPreferences.getInstance().then((prefs) => prefs.getString("jwt"))}",
-          "Content-Type": "application/json"
-        },).then((r) {
-      if (r.statusCode == 200) {
-        Get.printInfo(info: "[BackendController - getDiscordAuthUrl] Get code 200 (success)\nBody: " + r.body.toString());
-        return r.body;
-      } else {
-        Get.printInfo(info: "[BackendController - getDiscordAuthUrl] Get code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-        return null;
-      }
-    }).catchError((e) {
-      Get.printInfo(info: "[BackendController - getDiscordAuthUrl] catchError\nError: " + e.toString());
-      return null;
-    });
-  }
-
   static Future<String?> unlinkGithub() async {
     final prefs = await SharedPreferences.getInstance();
     final unlinkGithubUrl = Uri.parse("${prefs.getString("endpoint") ?? Settings.backendEndpoint}/${Settings.unlinkGithubRoute}");
@@ -407,27 +360,6 @@ class BackendController {
       }
     }).catchError((e) {
       Get.printInfo(info: "[BackendController - unlinkGithub] catchError\nError: " + e.toString());
-      return e.toString();
-    });
-  }
-
-  static Future<String?> unlinkDiscord() async {
-    final prefs = await SharedPreferences.getInstance();
-    final unlinkDiscordUrl = Uri.parse("${prefs.getString("endpoint") ?? Settings.backendEndpoint}/${Settings.unlinkDiscordRoute}");
-    return await http.post(unlinkDiscordUrl,
-        headers: {
-          "Authorization": "Bearer ${await SharedPreferences.getInstance().then((prefs) => prefs.getString("jwt"))}",
-          "Content-Type": "application/json"
-        },).then((r) {
-      if (r.statusCode == 200) {
-        Get.printInfo(info: "[BackendController - unlinkDiscord] Post code 200 (success)\nBody: " + r.body.toString());
-        return null;
-      } else {
-        Get.printInfo(info: "[BackendController - unlinkDiscord] Post code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-        return jsonDecode(r.body)["errors"].toString();
-      }
-    }).catchError((e) {
-      Get.printInfo(info: "[BackendController - unlinkDiscord] catchError\nError: " + e.toString());
       return e.toString();
     });
   }
@@ -499,7 +431,7 @@ class BackendController {
 
   static Future<String?> getDaylimotionUrl() async {
     final prefs = await SharedPreferences.getInstance();
-    final getDaylimotionUrl = Uri.parse("${prefs.getString("endpoint") ?? Settings.backendEndpoint}/${Settings.getDaylimotionRoute}");
+    final getDaylimotionUrl = Uri.parse("${prefs.getString("endpoint") ?? Settings.backendEndpoint}/${Settings.getDailymotionRoute}");
     return http.get(getDaylimotionUrl,
         headers: {
           "Authorization": "Bearer ${prefs.getString("jwt")}",
@@ -520,7 +452,7 @@ class BackendController {
 
   static Future<String?> postDaylimotionCode(String code) async {
     final prefs = await SharedPreferences.getInstance();
-    final postDaylimotionCode = Uri.parse("${prefs.getString("endpoint") ?? Settings.backendEndpoint}/${Settings.postDaylimotonCode}");
+    final postDaylimotionCode = Uri.parse("${prefs.getString("endpoint") ?? Settings.backendEndpoint}/${Settings.postDailymotionCode}");
     return http.post(postDaylimotionCode,
         headers: {
           "Authorization": "Bearer ${prefs.getString("jwt")}",
@@ -537,6 +469,48 @@ class BackendController {
       }
     }).catchError((e) {
       Get.printInfo(info: "[BackendController - postDaylimotionCode] catchError\nError: " + e.toString());
+      return e.toString();
+    });
+  }
+
+  static Future<String?> unlinkDailymotion() async {
+    final prefs = await SharedPreferences.getInstance();
+    final unlinkDailymotion = Uri.parse("${prefs.getString("endpoint") ?? Settings.backendEndpoint}/${Settings.unlinkDailymotionRoute}");
+    return http.delete(unlinkDailymotion,
+        headers: {
+          "Authorization": "Bearer ${prefs.getString("jwt")}",
+          "Content-Type": "application/json"
+        },).then((r) {
+      if (r.statusCode == 200) {
+        Get.printInfo(info: "[BackendController - unlinkDailymotion] Delete code 200 (success)\nBody: " + r.body.toString());
+        return null;
+      } else {
+        Get.printInfo(info: "[BackendController - unlinkDailymotion] Delete code ${r.statusCode} (failure)\nBody: " + r.body.toString());
+        return jsonDecode(r.body)["errors"].toString();
+      }
+    }).catchError((e) {
+      Get.printInfo(info: "[BackendController - unlinkDailymotion] catchError\nError: " + e.toString());
+      return e.toString();
+    });
+  }
+
+  static Future<String?> unlinkTrello() async {
+    final prefs = await SharedPreferences.getInstance();
+    final unlinkTrello = Uri.parse("${prefs.getString("endpoint") ?? Settings.backendEndpoint}/${Settings.unlinkTrelloRoute}");
+    return http.delete(unlinkTrello,
+        headers: {
+          "Authorization": "Bearer ${prefs.getString("jwt")}",
+          "Content-Type": "application/json"
+        },).then((r) {
+      if (r.statusCode == 200) {
+        Get.printInfo(info: "[BackendController - unlinkTrello] Delete code 200 (success)\nBody: " + r.body.toString());
+        return null;
+      } else {
+        Get.printInfo(info: "[BackendController - unlinkTrello] Delete code ${r.statusCode} (failure)\nBody: " + r.body.toString());
+        return jsonDecode(r.body)["errors"].toString();
+      }
+    }).catchError((e) {
+      Get.printInfo(info: "[BackendController - unlinkTrello] catchError\nError: " + e.toString());
       return e.toString();
     });
   }

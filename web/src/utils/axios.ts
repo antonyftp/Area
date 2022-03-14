@@ -23,5 +23,5 @@ import axios from "axios";
 // })
 
 export const axiosInstance = axios.create({
-    baseURL: "http://165.232.68.134:8080"
+    baseURL: "http://localhost:8080/"
 })

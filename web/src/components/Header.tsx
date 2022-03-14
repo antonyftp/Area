@@ -24,15 +24,6 @@ export const Header = () => {
     const {currentUser, setCurrentUser, logout} = useAuth()
     const navigate= useNavigate();
 
-    function checkCurrentUser() : string{
-        if (!currentUser) {
-            const local = getUser();
-            setCurrentUser(local);
-            return local.token
-        }
-        return currentUser.token
-    }
-
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElUser(event.currentTarget);
     };
@@ -45,7 +36,7 @@ export const Header = () => {
         if (window.location.href !== "http://localhost:8080/about.json" && !currentUser) {
             const local = getUser();
             if (!local)
-               navigate("/")
+               navigate("/signin")
             setCurrentUser(local);
         }
     }, [])
@@ -65,7 +56,7 @@ export const Header = () => {
                         </Menu>
                     </Box>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                        <Button sx={{ my: 2, color: 'white', display: 'block' }} href={"/home"}>Home</Button>
+                        <Button sx={{ my: 2, color: 'white', display: 'block' }} href={"/"}>Home</Button>
                         <Button sx={{ my: 2, color: 'white', display: 'block' }} href={"/client.apk"}>Download app</Button>
                         <Button sx={{ my: 2, color: 'white', display: 'block' }} href={"/about.json"}>About.json</Button>
                     </Box>

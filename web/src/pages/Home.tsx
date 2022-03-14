@@ -34,34 +34,18 @@ export interface IUserActionsReactions {
 
 export default function Home() {
     const {currentUser, setCurrentUser} = useAuth()
-    const [actionsReactions, setActionsReactions] = useState(null as Nullable<IUserActionsReactions>)
+    const [actionsReactions, setActionsReactions] = useState(null as Nullable<IActionsReactions[]>)
     const [actionReaction, setActionReaction] = useState(null as Nullable<IActionsReactions>)
-    const {user} = useAuth()
-
-    function checkCurrentUser() : string{
-        if (!currentUser) {
-            const local = getUser();
-            setCurrentUser(local);
-            return local.token
-        }
-        return currentUser.token
-    }
-
-    const getUserInfos = () => {
-        (async () => {
-            try {
-                const res = await checkCurrentUser()
-                const response = await user(res)
-                if (response.status === 200)
-                    setActionsReactions(response.data)
-            } catch (error) {
-                console.error(error);
-            }
-        })()
-    }
+    const {user, fetchActionsReactions} = useAuth()
 
     useEffect( () => {
-        getUserInfos()
+        (async () => {
+            try {
+                setActionsReactions(await fetchActionsReactions())
+            } catch (e) {
+                console.log(e)
+            }
+        })()
     },[]);
 
     return (
@@ -69,7 +53,7 @@ export default function Home() {
             <Header/>
             <AddArea actionReaction={actionReaction} setActionReaction={(newActionReaction) => {setActionReaction(newActionReaction)}} actionsReactions={actionsReactions} setActionsReactions={(newActionsReactions) => {setActionsReactions(newActionsReactions)}}/>
             <Box sx={{width: "95%", marginLeft: "auto", marginRight: "auto", display: "flex", flexWrap: "wrap"}}>
-                {actionsReactions !== null && actionsReactions.actionsReactions.map((item, idx) => (
+                {actionsReactions !== null && actionsReactions.map((item, idx) => (
                     <Box key={idx+1} sx={{display: "flex", flexWrap: "wrap", flexDirection: 'column', background: colors.DarkGray, width: "250px", height: "250px", borderRadius: "15px", margin: "10px", justifyContent: "center", alignItems: "center", cursor: "pointer"}} onClick={() => {
                         setActionReaction(item)
                     }}>

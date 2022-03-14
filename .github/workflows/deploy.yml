@@ -23,14 +23,14 @@ jobs:
         source: "."
         target: "area/"
 
-#    - name: Remove old docker if exist
-#      uses: appleboy/ssh-action@master
-#      with:
-#        HOST: 149.91.83.143
-#        USERNAME: "antonyftp"
-#        PASSWORD: "azerty12345"
-#        PORT: 22
-#        script: docker stop babel_server || true && docker rm babel_server || true && docker image rm babel_server --no-prune -f|| true
+    - name: Remove old docker if exist
+      uses: appleboy/ssh-action@master
+      with:
+        HOST: 149.91.83.143
+        USERNAME: "antonyftp"
+        PASSWORD: "azerty12345"
+        PORT: 22
+        script: docker-compose build
 
 #    - name: Build docker image
 #      uses: appleboy/ssh-action@master

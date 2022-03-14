@@ -12,16 +12,14 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Copy repository contents via scp
-      uses: appleboy/scp-action@master
-      env:
+    - name: Pull repository
+      uses: appleboy/ssh-action@master
+      with:
         HOST: 165.232.68.134
         USERNAME: "root"
         PASSWORD: "2022@Area"
         PORT: 22
-      with:
-        source: "."
-        target: "area/"
+        script: cd project/B-YEP-500-STG-5-1-area-antony.fantapie/ && git pull
 
     - name: Run docker
       uses: appleboy/ssh-action@master
@@ -30,7 +28,7 @@ jobs:
         USERNAME: "root"
         PASSWORD: "2022@Area"
         PORT: 22
-        script: cd area/ && docker-compose build && docker-compose up
+        script: cd project/B-YEP-500-STG-5-1-area-antony.fantapie/ && docker-compose build && docker-compose up
 
 #    - name: Build docker image
 #      uses: appleboy/ssh-action@master

@@ -30,7 +30,7 @@ jobs:
         USERNAME: "root"
         PASSWORD: "2022@Area"
         PORT: 22
-        script: docker-compose build && docker-compose up
+        script: cd area/ && docker-compose build && docker-compose up
 
 #    - name: Build docker image
 #      uses: appleboy/ssh-action@master

@@ -19,31 +19,4 @@ jobs:
         USERNAME: "root"
         PASSWORD: "2022@Area"
         PORT: 22
-        script: cd project/B-YEP-500-STG-5-1-area-antony.fantapie/ && git pull
-
-    - name: Run docker
-      uses: appleboy/ssh-action@master
-      with:
-        HOST: 165.232.68.134
-        USERNAME: "root"
-        PASSWORD: "2022@Area"
-        PORT: 22
-        script: cd project/B-YEP-500-STG-5-1-area-antony.fantapie/ && docker-compose build && docker-compose up
-
-#    - name: Build docker image
-#      uses: appleboy/ssh-action@master
-#      with:
-#        HOST: 149.91.83.143
-#        USERNAME: "antonyftp"
-#        PASSWORD: "azerty12345"
-#        PORT: 22
-#        script: cd babel/ && docker build -t babel_server .
-
-#    - name: Launch docker server
-#      uses: appleboy/ssh-action@master
-#      with:
-#        HOST: 149.91.83.143
-#        USERNAME: "antonyftp"
-#        PASSWORD: "azerty12345"
-#        PORT: 22
-#        script: cd babel/ && docker run --name babel_server -d -p 3001:3001 babel_server
+        script: ./deploy.sh

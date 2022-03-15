@@ -30,6 +30,9 @@ export default function AreaSelector(props: IProps) {
     const [marginBottom, setMarginBottom] = useState(props.marginBottom ? props.marginBottom : "15px")
     const [title, setTitle] = useState(props.title)
 
+    if (props.modifying)
+        props.items.push(props.value)
+
     const useStyles = makeStyles({
         paper: {
             background: colors.DarkGray,

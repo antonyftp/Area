@@ -16,7 +16,7 @@ const getIt = () : string => {
         if (env.BASE_URL !== undefined)
             return env.BASE_URL.toString()
     }
-    return "http://error:8080"
+    return env.BASE_URL.toString()
 }
 
 // export const axiosInstance = axios.create({

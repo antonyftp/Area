@@ -101,11 +101,12 @@ export default function Profile() {
                                     window.location.replace(response.data)
                             } catch (e) {
                                 console.error(e)
+                                displayError()
                             }
                         }}>Link Github account</GithubButton>}
                         {currentUser?.githubConnected && <GithubButton onClick={async () => {
                             try {
-                                signOutFromService(EOAuth.Github);
+                                await signOutFromService(EOAuth.Github);
                             } catch (e) {
                                 console.error(e)
                                 displayError()

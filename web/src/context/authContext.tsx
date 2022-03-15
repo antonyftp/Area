@@ -92,7 +92,6 @@ export const AuthProvider = (props: IProps) => {
             setEndpoint(env.BASE_URL)
     };
 
-
     const signinWithGoogle = async (email: string, name: string, access_token: string) => {
         const res = await axiosInstance.post("Authentication/loginWithGoogle", {
             name,

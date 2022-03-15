@@ -14,9 +14,8 @@ import AreaSelector from "./AreaSelector";
 import AreaInputText from "./AreaInputText";
 import DisplayVariables from "./DisplayVariables";
 import DisplayParams from "./DisplayParams";
-import {getUser} from "../utils/localStorage";
 import {useAuth} from "../context/authContext";
-import {IActionsReactions, IUserActionsReactions} from "../pages/Home";
+import {IActionsReactions} from "../pages/Home";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -160,7 +159,7 @@ export default function AddArea(props: IProps) {
             if (props.actionReaction.paramsReaction !== null) {
                 const params = Object.keys(props.actionReaction.paramsReaction).map(key => ({name: key, value: props.actionReaction!.paramsReaction![key]}))
                 if (params)
-                    setActionsParamsValues(params);
+                    setReactionsParamsValues(params);
             }
         }
     },[props.actionReaction]);
@@ -171,12 +170,20 @@ export default function AddArea(props: IProps) {
     },[actionsParamsValues, reactionsParamsValues]);
 
     useEffect(() => {
-        if (open && part === 2) {
+        if (!modif && open && part === 2) {
             setVariables(getActionsVariables)
             setActionsParams(getActionsParams)
             setReactionsParams(getReactionsParams)
         }
     },[part]);
+
+    useEffect(() => {
+        if (open && modif) {
+            setVariables(getActionsVariables)
+            setActionsParams(getActionsParams)
+            setReactionsParams(getReactionsParams)
+        }
+    },[open]);
 
     const getActionsReactionsInfos = async () => {
         try {
@@ -442,15 +449,16 @@ export default function AddArea(props: IProps) {
                             </Box>
                             <Box sx={{backgroundColor: colors.DarkGray, marginTop: "20px", width: "500px", borderRadius: "10px", padding: "5px"}}>
                                 <Typography sx={{color: colors.White, textAlign: "center", fontWeight: "bold", fontFamily: "Montserrat"}}>Action Parameters</Typography>
-                                <DisplayParams modify={modif} modifyValues={props?.actionReaction?.paramsAction ? actionsParamsValues : []} items={actionsParams} onChange={(val: any) => {setActionsParamsNewValues(val)}}/>
+                                <DisplayParams modify={modif} modifyValues={actionsParamsValues ? actionsParamsValues : []} items={actionsParams} onChange={(val: any) => {setActionsParamsNewValues(val)}}/>
                             </Box>
                             <Box sx={{backgroundColor: colors.DarkGray, marginTop: "20px", width: "500px", borderRadius: "10px", padding: "5px"}}>
                                 <Typography sx={{color: colors.White, textAlign: "center", fontWeight: "bold", fontFamily: "Montserrat"}}>Reaction Parameters</Typography>
-                                <DisplayParams modify={modif} modifyValues={props?.actionReaction?.paramsReaction ? reactionsParamsValues : []} items={reactionsParams} onChange={(val: any) => {setReactionsParamsNewValues(val)}}/>
+                                <DisplayParams modify={modif} modifyValues={reactionsParamsValues ? reactionsParamsValues : []} items={reactionsParams} onChange={(val: any) => {setReactionsParamsNewValues(val)}}/>
                             </Box>
                             <Box sx={{marginTop: "40px", width: "500px"}}>
                                 <Button variant="contained" sx={{width: "48%"}} onClick={() => {
-                                    setReactionsParamsValues([{name: "none", value: "none"}])
+                                    if (!modif)
+                                        setReactionsParamsValues([{name: "none", value: "none"}])
                                     setPart(1)
                                 }}>previous</Button>
                                 <Button variant="contained" sx={{width: "48%", marginLeft: "4%"}} onClick={async () => {

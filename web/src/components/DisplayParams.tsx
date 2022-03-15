@@ -27,6 +27,10 @@ export default function DisplayParams(props: IProps) {
         return val
     }
 
+        // props.items.map((item, idx) => (
+        //     console.log(props.modifyValues, getValue(item.name), item.name)
+        // ))
+
     return (
         <Box sx={{width: "100%"}}>
             {props.items.length > 0 ?

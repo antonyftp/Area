@@ -21,7 +21,7 @@ export default function ChangeEndpoint() {
     useEffect(() => {
         if (getEndpoint() !== null)
             setEndpoint(getEndpoint().endpoint)
-        setBaseEndpoint(env.REACT_APP_BASE_URL)
+        setBaseEndpoint(env.BASE_URL)
     },[open]);
 
     const handleClose = () => {
@@ -49,6 +49,7 @@ export default function ChangeEndpoint() {
                             changeEndpoint(baseEndpoint)
                         } else
                             changeEndpoint(endpoint)
+                        window.location.replace("/profile?endpointchange=ok")
                     }}>OK</Button>
                 </DialogActions>
             </Dialog>

@@ -1,20 +1,25 @@
 ﻿using System.Net.Http.Headers;
 using Area.Controllers;
+using Area.Database;
 using Microsoft.AspNetCore.Builder;
 using Newtonsoft.Json;
 using Area.Models;
 using Area.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+
 namespace Area.Services.OAuthService;
     public class WeatherService
     {
         private readonly UserService _userService;
+        private string _key { get; set; }
         private readonly ActionReactionService _arService;
         private static HttpClient Client;
 
         public class WeatherDataGet
         {
-            public string key { get; set; } = "0119cd5856364645a4f110759221303";
+            
+            public string key { get; set; }
             public string q { get; set; }
             public string value { get; set; }
         }
@@ -45,7 +50,7 @@ namespace Area.Services.OAuthService;
 
             public Current current { get; set; }
         }
-        public WeatherService(UserService userService, ActionReactionService ar)
+        public WeatherService(UserService userService, ActionReactionService ar, IOptions<WeatherSettings>Weather)
         {
             _userService = userService;
             _arService = ar;
@@ -53,11 +58,15 @@ namespace Area.Services.OAuthService;
             Client.BaseAddress = new Uri("http://api.weatherapi.com/v1/");
             Client.DefaultRequestHeaders.Accept.Clear();
             Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _key = Weather.Value.ApiKey;
+
         }
 
         public async Task<WeatherResponse> GetData(WeatherDataGet data)
         {
-            try {
+            try
+            {
+                data.key = _key;
                 HttpResponseMessage response = await Client.GetAsync($"current.json?key={data.key}&q={data.q}&aqi=yes");
                 return await response.Content.ReadAsAsync<WeatherResponse>();
             } catch (Exception e) {
@@ -95,7 +104,7 @@ namespace Area.Services.OAuthService;
                     temp.Data?.Remove("State");
                     temp.Data?.Add("State", "Above");
                     _arService.Update(temp, i.UserId);
-                    return true;
+                    return false;
                 }
                 if (State == "Above" && float.Parse(result.current.temp_c) < float.Parse(data.value))
                 {
@@ -137,7 +146,7 @@ namespace Area.Services.OAuthService;
                     temp.Data?.Remove("State");
                     temp.Data?.Add("State", "Above");
                     _arService.Update(temp, i.UserId);
-                    return true;
+                    return false;
                 }
                 if (State == "Above" && float.Parse(result.current.win_kph) < float.Parse(data.value))
                 {
@@ -179,7 +188,7 @@ namespace Area.Services.OAuthService;
                     temp.Data?.Remove("State");
                     temp.Data?.Add("State", "Above");
                     _arService.Update(temp, i.UserId);
-                    return true;
+                    return false;
                 }
                 if (State == "Above" && float.Parse(result.current.precip_mm) < float.Parse(data.value))
                 {
@@ -221,7 +230,7 @@ namespace Area.Services.OAuthService;
                     temp.Data?.Remove("State");
                     temp.Data?.Add("State", "Above");
                     _arService.Update(temp, i.UserId);
-                    return true;
+                    return false;
                 }
                 if (State == "Above" && float.Parse(result.current.humidity) < float.Parse(data.value))
                 {
@@ -263,7 +272,7 @@ namespace Area.Services.OAuthService;
                     temp.Data?.Remove("State");
                     temp.Data?.Add("State", "Above");
                     _arService.Update(temp, i.UserId);
-                    return true;
+                    return false;
                 }
                 if (State == "Above" && float.Parse(result.current.cloud) < float.Parse(data.value))
                 {
@@ -291,29 +300,15 @@ namespace Area.Services.OAuthService;
 
             if (State == null)
             {
-                if (result.current.condition.text == "Sunny")
-                {
-                    temp.Data?.Add("State", "Sunny");
-                }
-                if (result.current.condition.text == "Rainy")
-                {
-                    temp.Data?.Add("State", "Rainy");
-                }
+                temp.Data?.Add("State", result.current.condition.text);
                 _arService.Update(temp, i.UserId);
             }
             else
             {
-                if (State == "Sunny" && result.current.condition.text == "Rainy")
+                if (State != "Rainy" && (result.current.condition.text.Contains("rain") || result.current.condition.text.Contains("Rain")))
                 {
                     temp.Data?.Remove("State");
                     temp.Data?.Add("State", "Rainy");
-                    _arService.Update(temp, i.UserId);
-                    return true;
-                }
-                if (State == "Rainy" && result.current.condition.text == "Sunny")
-                {
-                    temp.Data?.Remove("State");
-                    temp.Data?.Add("State", "Sunny");
                     _arService.Update(temp, i.UserId);
                     return true;
                 }
@@ -350,7 +345,7 @@ namespace Area.Services.OAuthService;
                     temp.Data?.Remove("State");
                     temp.Data?.Add("State", "Above");
                     _arService.Update(temp, i.UserId);
-                    return true;
+                    return false;
                 }
                 if (State == "Above" && float.Parse(result.current.air_quality.co) < float.Parse(data.value))
                 {

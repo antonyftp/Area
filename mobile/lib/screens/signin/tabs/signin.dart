@@ -39,6 +39,7 @@ class _SignInTabState extends State<SignInTab> {
       scopes: [
         'https://www.googleapis.com/auth/userinfo.email',
         'https://mail.google.com/',
+        "https://www.googleapis.com/auth/youtube"
       ],
     );
     try {

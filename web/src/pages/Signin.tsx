@@ -15,10 +15,22 @@ import GoogleLogin, {GoogleLoginResponse} from "react-google-login";
 import {axiosInstance} from "../utils/axios";
 import {Nullable} from "../utils/nullable";
 import GoogleLoginConditions from "../components/GoogleLoginConditions";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 };
+
+const notifyError = (str: string) => toast.error(str, {
+    position: "top-center",
+    autoClose: 1500,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+});
 
 const Signin = () => {
     const [data, setData] = useState({email: "", password: ""});
@@ -40,6 +52,7 @@ const Signin = () => {
 
     return (
         <Container component="main" maxWidth="xs">
+            <ToastContainer theme={"dark"}/>
             <CssBaseline />
             <Box sx={{ marginTop: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', }}>
                 <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}><LockOutlinedIcon /></Avatar>
@@ -52,7 +65,7 @@ const Signin = () => {
                             await signin(data.email, data.password)
                             navigate("/")
                         } catch (error) {
-                            alert("Email ou mot de passe incorrect")
+                            notifyError("Email ou mot de passe incorrect")
                             console.error(error);
                         }
                     }}>Sign In</Button>

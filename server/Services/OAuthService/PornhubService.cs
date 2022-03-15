@@ -13,15 +13,19 @@ public class PornhubService
     private static HttpClient Client;
 
 
-    private class star
+    private class StarData
     {
         public string star_name { get; set; }
         public string videos_count_all { get; set; }
     }
-
-    private class StarData
+    private class Star
     {
-        public star[] stars { get; set; }
+        public StarData star { get; set; }
+    }
+
+    private class StarList
+    {
+        public Star[] stars { get; set; }
     }
 
     public PornhubService(UserService userService, ActionReactionService ar)
@@ -39,7 +43,8 @@ public class PornhubService
         try
         {
             HttpResponseMessage response = await Client.GetAsync("webmasters/stars_detailed");
-            StarData result = response.Content.ReadAsAsync<StarData>().Result;
+            Console.WriteLine(response);
+            var result = response.Content.ReadAsAsync<StarList>().Result;
             string Name = i.ParamsAction.GetValueOrDefault("Name");
             var Value = i.Data.GetValueOrDefault("Value");
             UpdateActionReactionToUserBody temp = new UpdateActionReactionToUserBody();
@@ -50,20 +55,20 @@ public class PornhubService
             temp.Data = i.Data;
             foreach (var y in result.stars)
             {
-                if (y.star_name == Name)
+                if (y.star.star_name == Name)
                 {
                     if (Value == null)
                     {
-                        temp.Data.Add("Value", y.videos_count_all);
+                        temp.Data.Add("Value", y.star.videos_count_all);
                         _arService.Update(temp, i.UserId);
                         return false;
                     }
                     else
                     {
-                        if (Int32.Parse(Value) < Int32.Parse(y.videos_count_all))
+                        if (Int32.Parse(Value) < Int32.Parse(y.star.videos_count_all))
                         {
                             temp.Data.Remove("Value");
-                            temp.Data.Add("Value", y.videos_count_all);
+                            temp.Data.Add("Value", y.star.videos_count_all);
                             _arService.Update(temp, i.UserId);
                             return true;
                         }

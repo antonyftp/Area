@@ -11,7 +11,6 @@ import About from "./pages/About";
 import {AuthProvider} from "./context/authContext";
 import GoogleCallback from "./pages/GoogleCallback";
 import ClientApk from "./pages/ClientApk";
-import DiscordCallback from "./pages/DiscordCallback";
 import TrelloCallback from "./pages/TrelloCallback";
 import DailymotionCallback from "./pages/DailymotionCallback";
 
@@ -50,7 +49,6 @@ export default function MyApp() {
                             <Route path="/signup" element={<Signup />} />
                             <Route path="/profile" element={<Profile />} />
                             <Route path="/OAuth/callback/github" element={<GithubCallback />} />
-                            <Route path="/OAuth/callback/discord" element={<DiscordCallback />} />
                             <Route path="/oauth/callback/google" element={<GoogleCallback />} />
                             <Route path="/oauth/callback/trello" element={<TrelloCallback />} />
                             <Route path="/oauth/callback/dailymotion" element={<DailymotionCallback />} />

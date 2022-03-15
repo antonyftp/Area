@@ -25,11 +25,4 @@ public class TrelloController : Controller
         Console.WriteLine("tttttttttt");
         return Ok();
     }
-    
-    [HttpPost("onBoardUpdateTest")]
-    public async Task<ActionResult> OnBoardUpdateTest()
-    {
-        await _trelloService.CreateWebhooks("Trello/onBoardUpdate", "62116654b7b6fc3dbc712e0b", "oui", new ActionReaction());
-        return Ok();
-    }
 }

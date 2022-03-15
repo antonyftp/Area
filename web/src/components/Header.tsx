@@ -15,6 +15,7 @@ import {useAuth} from "../context/authContext";
 import {getUser} from "../utils/localStorage";
 import {useEffect} from "react";
 import {useNavigate} from "react-router-dom";
+import env from "react-dotenv";
 
 const pages = ['Home', 'About'];
 
@@ -33,7 +34,7 @@ export const Header = () => {
     };
 
     useEffect(() => {
-        if (window.location.href !== "http://localhost:8080/about.json" && !currentUser) {
+        if (window.location.href !== "http://localhost:8081/about.json" && window.location.href !== "http://165.232.68.134:8081/about.json" && !currentUser) {
             const local = getUser();
             if (!local)
                navigate("/signin")

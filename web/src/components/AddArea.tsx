@@ -17,6 +17,8 @@ import DisplayParams from "./DisplayParams";
 import {getUser} from "../utils/localStorage";
 import {useAuth} from "../context/authContext";
 import {IActionsReactions, IUserActionsReactions} from "../pages/Home";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export type IParam = {name: string, description: string}
 export type IParams = IParam[]
@@ -88,7 +90,7 @@ export default function AddArea(props: IProps) {
     const [reactions, setReactions] = useState([] as string[])
 
     const getServices = () => {
-        const googleServices = ["gmail"]
+        const googleServices = ["gmail", "youtube"]
         const publicServices = ["pornhub", "weather"]
 
         const availableServices = about?.server.services.reduce((acc, cur) => {
@@ -105,14 +107,26 @@ export default function AddArea(props: IProps) {
 
     const getActionsFromActionService = (name: string) => {
         const availableActions = about?.server.services.find(e => e.name === name)?.actions.reduce((acc, cur) => [...acc, cur.name], [] as string[])
+
         if (availableActions)
             setActions(availableActions);
     }
 
     const getReactionsFromReactionService = (name: string) => {
         const availableReactions = about?.server.services.find(e => e.name === name)?.reactions.reduce((acc, cur) => [...acc, cur.name], [] as string[])
+
         if (availableReactions)
             setReactions(availableReactions);
+    }
+
+    const getExistingReactionServices = () : string[]  => {
+        let reactionsServices = [] as string[];
+
+        about?.server.services.forEach((service: any) => {
+            if (services !== undefined && services !== null && services.includes(service.name) && service?.reactions[0] !== null && service?.reactions[0] !== undefined)
+                reactionsServices.push(service.name)
+        });
+        return reactionsServices
     }
 
     useEffect(() => {
@@ -168,11 +182,9 @@ export default function AddArea(props: IProps) {
         try {
             props.setActionsReactions(await fetchActionsReactions())
         } catch (e) {
-            console.log(e)
+            console.error(e)
         }
     }
-
-
 
     const getActionsVariables = (): {name: string, description: string}[] => {
         let actionsVariables = [] as {name: string, description: string}[];
@@ -321,8 +333,28 @@ export default function AddArea(props: IProps) {
         setReactionsParamsValuesFormatted(tmp)
     }
 
+    const notifySuccess = (str: string) => toast.success(str, {
+        position: "top-center",
+        autoClose: 1500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+    });
+
+    const notifyError = (str: string) => toast.error(str, {
+        position: "top-center",
+        autoClose: 1500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+    });
+
     const displayError = () => {
-        alert("One or more parameters aren t completed, please complete them all to continue !")
+        notifyError("One or more parameters aren't completed, please complete them all to continue !")
     }
 
     const handleClose = () => {
@@ -342,6 +374,7 @@ export default function AddArea(props: IProps) {
 
     return (
         <Fragment>
+            <ToastContainer theme={"dark"}/>
             <div style={{marginLeft: "55px", marginTop: "100px", marginBottom: "30px"}}>
                 <AreaButton text={"Add an Area"} width={"200px"} height={"50px"} onClick={() => {setOpen(true)}}/>
             </div>
@@ -352,7 +385,7 @@ export default function AddArea(props: IProps) {
                         <DialogContentText color={colors.White}>{modif ? "You can modify the service and the action you want." : "First select the service you want and the action to check."}</DialogContentText>
                         <DialogContentText color={colors.White}>{modif ? "Then you can modify the service and the reaction you want." : "Then select the service you want and the reaction to do if the action is detected."}</DialogContentText>
                         <Box noValidate component="form" sx={{display: 'flex', flexDirection: 'column', m: 'auto', width: '40%', marginTop: "60px", alignItems: "center"}}>
-                            <AreaInputText value={form.areaName} marginBottom={"30px"} label={"Area Name"} placeholder={"Area Name"} onChange={(val: string) => {
+                            <AreaInputText value={form.areaName} marginBottom={"30px"} label={"Area Name"} placeholder={"Area Name"} maxCharacters={48} onChange={(val: string) => {
                                 setForm({...form, areaName: val })
                             }}/>
                             <AreaSelector modifying={modif} title={"Action Service"} items={services} value={form.actionService} onChange={(val: string) => {
@@ -367,7 +400,7 @@ export default function AddArea(props: IProps) {
                                     action: val
                                 }})
                             }}/>
-                            <AreaSelector modifying={modif}title={"Reaction Service"} items={services} value={form.reactionService} onChange={(val: string) => {
+                            <AreaSelector modifying={modif}title={"Reaction Service"} items={getExistingReactionServices()} value={form.reactionService} onChange={(val: string) => {
                                 setForm({...form, ...{
                                     reactionService: val,
                                     reactions: ""
@@ -395,7 +428,7 @@ export default function AddArea(props: IProps) {
                         <Box noValidate component="form" sx={{display: 'flex', flexDirection: 'column', m: 'auto', width: '40%', marginTop: "60px", alignItems: "center"}}>
                             <Box sx={{backgroundColor: colors.DarkGray, width: "500px", borderRadius: "10px", padding: "5px"}}>
                                 <Typography sx={{color: colors.White, textAlign: "center", fontFamily: "Montserrat", fontWeight: "bold"}}>Area Name</Typography>
-                                <Typography sx={{color: colors.White, textAlign: "center", fontFamily: "Montserrat"}}>{form.areaName}</Typography>
+                                <Typography sx={{color: colors.White, textAlign: "center", fontFamily: "Montserrat"}}>{form.areaName.length > 20 ? form.areaName.slice(0, 20)+"..." : form.areaName}</Typography>
                             </Box>
                             <Box sx={{backgroundColor: colors.DarkGray, marginTop: "20px", width: "500px", borderRadius: "10px", padding: "5px"}}>
                                 <Typography sx={{color: colors.White, textAlign: "center", fontWeight: "bold", fontFamily: "Montserrat"}}>If</Typography>
@@ -424,16 +457,28 @@ export default function AddArea(props: IProps) {
                                     if (checkParamsValuesCompleted())
                                         try {
                                             if (!modif) {
-                                                await add(form.areaName, form.actionService, form.action, form.reactionService, form.reaction, actionsParamsValuesFormatted, reactionsParamsValuesFormatted)
-                                                await getActionsReactionsInfos()
-                                                handleClose()
+                                                try {
+                                                    await add(form.areaName, form.actionService, form.action, form.reactionService, form.reaction, actionsParamsValuesFormatted, reactionsParamsValuesFormatted)
+                                                    await getActionsReactionsInfos()
+                                                    notifySuccess(`The Area ${form.areaName} has been successfully added.`);
+                                                    handleClose()
+                                                } catch (error) {
+                                                    notifyError("An error occured, try again later")
+                                                    console.error(error);
+                                                }
                                             } else {
-                                                await update(props?.actionReaction!.id, form.areaName, actionsParamsValuesFormatted, reactionsParamsValuesFormatted)
-                                                await getActionsReactionsInfos()
-                                                handleClose()
+                                                try {
+                                                    await update(props?.actionReaction!.id, form.areaName, actionsParamsValuesFormatted, reactionsParamsValuesFormatted)
+                                                    await getActionsReactionsInfos()
+                                                    notifySuccess(`The Area ${form.areaName} has been successfully modified.`);
+                                                    handleClose()
+                                                } catch (error) {
+                                                    notifyError("An error occured, try again later")
+                                                    console.error(error);
+                                                }
                                             }
                                         } catch (error) {
-                                            alert("An error occured, try again later")
+                                            notifyError("An error occured, try again later")
                                             console.error(error);
                                         }
                                 }}>{modif ? "modify area" : "add area"}</Button>
@@ -441,10 +486,10 @@ export default function AddArea(props: IProps) {
                                     try {
                                         await remove(props.actionReaction!.id)
                                         await getActionsReactionsInfos()
-                                        alert(`The Area ${props.actionReaction!.name} has been successfully deteted.`)
+                                        notifySuccess(`The Area ${props.actionReaction!.name} has been successfully deteted.`)
                                         handleClose()
                                     } catch (error) {
-                                        alert("An error occured, try again later")
+                                        notifyError("An error occured, try again later")
                                         console.error(error);
                                     }
                                 }}>Remove</RemoveButton>}

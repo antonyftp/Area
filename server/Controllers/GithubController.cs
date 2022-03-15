@@ -63,9 +63,10 @@ public class GithubController : Controller
     {
         using (var reader = new StreamReader(Request.Body))
         {
+            Console.WriteLine("pull_request");
             var txt = await reader.ReadToEndAsync();
             JObject json = JObject.Parse(txt);
-            var actionReaction = _actionReactionService.FindGithubActReactFromEvent("pull_request", json["pusher"]["name"].Value<string>());
+            var actionReaction = _actionReactionService.FindGithubActReactFromEvent("pull_request", json["pull_request"]["user"]["login"].Value<string>());
             var user = _userService.GetUserById(actionReaction.UserId);
             _reactionService.ReactionFromAction(user, actionReaction);
         }
@@ -79,7 +80,7 @@ public class GithubController : Controller
         {
             var txt = await reader.ReadToEndAsync();
             JObject json = JObject.Parse(txt);
-            var actionReaction = _actionReactionService.FindGithubActReactFromEvent("workflow_run", json["pusher"]["name"].Value<string>());
+            var actionReaction = _actionReactionService.FindGithubActReactFromEvent("workflow_run", json["workflow_run"]["triggering_actor"]["login"].Value<string>());
             var user = _userService.GetUserById(actionReaction.UserId);
             _reactionService.ReactionFromAction(user, actionReaction);
         }

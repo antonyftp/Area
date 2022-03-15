@@ -17,105 +17,16 @@ The goal of this project is to create a website and a mobile application that wi
 
 When the action is triggered, the reaction will be executed. Sometimes, variables can be passed from the action to the reaction (for example, the author of the commit).
 
-## Services
-
-### Github
-
-#### Actions
-
-- When a push is made to a certain repository
-- When a pull request is made to a certain repository
-- When a workflow is triggered on a certain repository
-
-#### Reactions
-
-- Create a new issue on a certain repository
-- Create a new pull request on a certain repository
-
-### Gmail (not fully implemented)
-
-#### Actions
-
-- When a new email is received
-
-#### Reactions
-
-- Send an email
-
-### Weather (not fully implemented)
-
-#### Actions
-
-- When the temperature is above a certain value
-- When the temperature is below a certain value
-- When the weather is sunny
-- When the weather is rainy
-- When the Air Quality Index is above a certain value
-- When the Air Quality Index is below a certain value
-- When th UV Index is above a certain value
-- When the UV Index is below a certain value
-- WHen the cloud cover is above a certain value
-- When the cloud cover is below a certain value
-- When the wind speed is above a certain value
-- When the wind speed is below a certain value
-- When the rain percentage is above a certain value
-- When the rain percentage is below a certain value
-
-### Trello
-
-#### Reactions
-
-- Create a new board
-- Create a new list
-- Create a new card
-
-### Pornhub (not fully implemented)
-
-#### Actions
-
-- When a pornstar post a video
-
-### Dailymotion
-
-#### Actions
-
-- When a video is published
-- When a video is created
-- When a video is deleted
-- WHen video is ready (encoding ended)
-
-## Project architecture
-
-![Global Diagram](documentation/global_diagram.PNG)
-
-### Server
-
-The server is a simple REST API that will allow the web and mobile client to sign up/sign in and create actions and reactions. The server is also in charge of triggering actions and executing reactions. The server is written in **C#** with a **Mongo DB** database and hosted on Digital Ocean. It's available on the following address: [http://165.232.68.134:8080](http://165.232.68.134:8080).
-
-![Server Diagram](documentation/backend_diagram.jpeg)
-
-### Web Application
-
-The web application allow the user to sing up/sign in, create actions and reactions, see the list of actions and reactions, see the list of services and see the list of actions and reactions of a service. This web application is written in **React** and hosted on Digital Ocean. It's available on the following address: [http://165.232.68.134:8081](http://165.232.68.134:8081).
-(As the web application can be run from different IP addresses, you may have to replace the base URL with the IP address of your server for OAuth Callback)
-
-### Mobile Application
-
-The mobile application as the same features as the web application. The mobile application is written in **Flutter** and hosted on Digital Ocean. The android version can be downloaded on the following address: [http://165.232.68.134:8081/client.apk](http://165.232.68.134:8081/client.apk).
-(In this application, the user can change the backend endpoint while running the application by clicking the wheel icon on the login page or in the account page when the user is logged)
-
-![Mobile Diagram](documentation/mobile_diagram.jpeg)
-
 ## Run the project in local
 
 All the project is dockerized. To build and run the project in local you need to have an env directory which contains the following files:
 
 - **mongodb.env**:
-    - MONGO_INITDB_ROOT_USERNAME=root
-    - MONGO_INITDB_ROOT_PASSWORD=*your mongodb password*
+  - MONGO_INITDB_ROOT_USERNAME=root
+  - MONGO_INITDB_ROOT_PASSWORD=*your mongodb password*
 - **mobile.env**:
-    - BASE_URL=*the base url of the server*
-    
+  - BASE_URL=*the base url of the server*
+
 For the server, you need to modify the server/appsettings.Production.json with the following values:
 
     {
@@ -147,37 +58,116 @@ If you want to use your own API keys for services, you can add them in the serve
                 "ClientID": "*your google client id*",
                 "ClientSecret": "*your google client secret*"
             },
-            "Discord": {
-                "ClientID": "*your discord client id*",
-                "ClientSecret": "*your discord client secret*"
-            },
-            "Dailymotion": {
-                "ClientID": "*your dailymotion client id*",
-                "ClientSecret": "*your dailymotion client secret*"
-            },
             "Trello": {
                 "ClientID": "*your trello client id*",
                 "ClientSecret": "*your trello client secret*"
             }
         },
+        "Weather": {
+            "ApiKey": "*your www.weatherapi.com api key*"
+        },
         "JwtKey": "slonectahujqebgmzdjyssfzvttalzmeybragnzxdtvxkxzqonnojqbzcnudurtlrtsvervrarbveayagkhbxjzlumawlduwwteppwfiixqgsgmfngpngqhdzdcicsxb"
     }
 
-If you run the project locally, don't forget to use a ssh proxy to connect to the server, without it webhooks won't work.
+If you run the project locally, don't forget to use an ssh proxy to connect to the server, without it webhooks won't work.
 
-For the web application, you need to modify the web/src/utils/axios.ts with the following values:
+For the web application, you need to create a web/src/.env file with the following values:
 
-    import axios from "axios";
-
-    export const axiosInstance = axios.create({
-        baseURL: "*the base url of the server*"
-    })
+    BASE_URL=*the base url of the server*
 
 Then you can run the following command (It will also run the dataseeder that will erase the existing database and add the services in the right collection):
 
     docker-compose build && docker-compose up -d
 
 You can also run the project in local with the scripts 'deploy_with_data_seeder.sh' and 'deploy_without_data_seeder.sh'.
+
+
+## Services
+
+### Github
+
+#### Actions
+
+- When a push is made to a certain repository
+- When a pull request is made to a certain repository
+- When a workflow is triggered on a certain repository
+
+#### Reactions
+
+- Create a new issue on a certain repository
+- Create a new pull request on a certain repository
+
+### Gmail
+
+#### Actions
+
+- When a new email is received
+
+#### Reactions
+
+- Send an email
+
+### Youtube
+
+#### Actions
+
+- When a video is published
+
+#### Reactions
+
+- Like a video
+
+### Weather
+
+#### Actions
+
+- When the temperature is below a certain value
+- When the weather is rainy
+- When the Air Quality Index is below a certain value
+- When the cloud cover is below a certain value
+- When the wind speed is below a certain value
+- When the rain percentage is below a certain value
+
+### Trello
+
+#### Actions
+
+- When a card is added or deleted from a list
+
+#### Reactions
+
+- Create a new board
+- Create a new list
+- Create a new card
+
+### Pornhub
+
+#### Actions
+
+- When a pornstar post a video
+
+
+## Project architecture
+
+![Global Diagram](documentation/global_diagram.PNG)
+
+### Server
+
+The server is a simple REST API that will allow the web and mobile client to sign up/sign in and create actions and reactions. The server is also in charge of triggering actions and executing reactions. The server is written in **C#** with a **Mongo DB** database and hosted on Digital Ocean. It's available on the following address: [http://165.232.68.134:8080](http://165.232.68.134:8080).
+
+![Server Diagram](documentation/backend_diagram.jpeg)
+
+### Web Application
+
+The web application allow the user to sing up/sign in, create actions and reactions, see the list of actions and reactions, see the list of services and see the list of actions and reactions of a service. This web application is written in **React** and hosted on Digital Ocean. It's available on the following address: [http://165.232.68.134:8081](http://165.232.68.134:8081).
+(As the web application can be run from different IP addresses, you may have to replace the base URL with the IP address of your server for OAuth Callback)
+
+### Mobile Application
+
+The mobile application as the same features as the web application. The mobile application is written in **Flutter** and hosted on Digital Ocean. The android version can be downloaded on the following address: [http://165.232.68.134:8081/client.apk](http://165.232.68.134:8081/client.apk).
+(In this application, the user can change the backend endpoint while running the application by clicking the wheel icon on the login page or in the account page when the user is logged)
+
+![Mobile Diagram](documentation/mobile_diagram.jpeg)
 
 ## API documentation
 

@@ -10,7 +10,6 @@ public class DatabaseSettings
     public string? ConnectionString { get; set; }
     public string? DatabaseName { get; set; }
 }
-
 public class OAuthSettings
 {
     public const string Github = "Github";
@@ -29,4 +28,9 @@ public class WebhooksSettings
     public const string Section = "WebhooksSettings";
     
     public string ServerBaseUrl { get; set; } = String.Empty;
+}
+
+public class WeatherSettings
+{
+    public string ApiKey { get; set; }
 }

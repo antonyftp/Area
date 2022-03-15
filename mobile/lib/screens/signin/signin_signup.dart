@@ -56,7 +56,10 @@ class _LoginRegisterState extends State<LoginRegister> with SingleTickerProvider
         leftButtonOnPressed: () => Get.back(),
         height: 250,
         children: [
-          AreaInputText(hintText: "Enter the new endpoint", labelText: "New Endpoint", controller: _apiEndpointController)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: AreaInputText(hintText: "Enter the new endpoint", labelText: "New Endpoint", controller: _apiEndpointController),
+          )
         ]
     );
   }
@@ -104,7 +107,10 @@ class _LoginRegisterState extends State<LoginRegister> with SingleTickerProvider
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 150.0, vertical: 20.0),
-                child: Image.asset('assets/images/area-logo.png'),
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 200, maxHeight: 200),
+                  child: Image.asset('assets/images/area-logo.png')
+                ),
               ),
               _buildTabBar(),
               SizedBox(

@@ -42,6 +42,26 @@ public class GoogleService : Service
         public string To { get; set; } = string.Empty;
 
     }
+
+    public class Statistics
+    {
+        public string videoCount { get; set; }
+    }
+    public class Items
+    {
+        public Statistics statistics { get; set; }
+    }
+
+    public class RatingContent
+    {
+        public string id { get; set; }
+        public string rating { get; set; }
+    }
+
+    public class YoutubeResponse
+    {
+        public Items[] items { get; set; }
+    }
     
     protected override void SetClients(User user) 
     {
@@ -163,5 +183,96 @@ public class GoogleService : Service
           .Replace('+', '-')
           .Replace('/', '_')
           .Replace("=", "");
+    }
+
+    public async Task<bool> GetVideoCount(ActionReaction i)
+    {
+        string username = i.ParamsAction.GetValueOrDefault("ChannelId");
+        var Value = i.Data.GetValueOrDefault("Value");
+        UpdateActionReactionToUserBody temp = new UpdateActionReactionToUserBody();
+        temp.ActionReactionId = i.Id;
+        temp.Name = i.Name;
+        temp.ParamsAction = i.ParamsAction;
+        temp.ParamsReaction = i.ParamsReaction;
+        temp.Data = i.Data;
+        var response = await _httpClient.GetAsync($"youtube/v3/channels?forUsername={username}&part=statistics");
+        var result = response.Content.ReadAsAsync<YoutubeResponse>().Result;
+        var channel = result.items[0];
+        if (Value == null)
+        {
+            temp.Data.Add("Value", channel.statistics.videoCount);
+            _arService.Update(temp, i.UserId);
+            return false;
+        }
+
+        if (Int32.Parse(channel.statistics.videoCount) > Int32.Parse(Value))
+        {
+            temp.Data.Remove("Value");
+            temp.Data.Add("Value", channel.statistics.videoCount);
+            _arService.Update(temp, i.UserId);
+            return true;
+        }
+        return false;
+    }
+
+    public async Task<bool> putRate(ActionReaction i)
+    {
+        var Current = i.Data.GetValueOrDefault("Rating");
+        UpdateActionReactionToUserBody temp = new UpdateActionReactionToUserBody();
+        temp.ActionReactionId = i.Id;
+        temp.Name = i.Name;
+        temp.ParamsAction = i.ParamsAction;
+        temp.ParamsReaction = i.ParamsReaction;
+        temp.Data = i.Data;
+        try
+        {
+            if (Current == null)
+            {
+                Console.WriteLine(i.ParamsReaction.GetValueOrDefault("VideoId"));
+                Console.WriteLine(i.ParamsReaction.GetValueOrDefault("Rating"));
+                var response = await _httpClient.PostAsJsonAsync("youtube/v3/videos/rate", new RatingContent
+                {
+                    id = i.ParamsReaction.GetValueOrDefault("VideoId"),
+                    rating = i.ParamsReaction.GetValueOrDefault("Rating")
+                });
+                Console.WriteLine(response);
+                temp.Data.Add("Rating", i.ParamsReaction.GetValueOrDefault("Rating"));
+                _arService.Update(temp, i.UserId);
+                return true;
+            }
+            else
+            {
+                if (Current == "none")
+                {
+                    var response = await _httpClient.PostAsJsonAsync("youtube/v3/video/rate", new RatingContent
+                    {
+                        id = i.ParamsReaction.GetValueOrDefault("VideoId"),
+                        rating = i.ParamsReaction.GetValueOrDefault("Rating")
+                    });
+                    temp.Data.Remove("Rating");
+                    temp.Data.Add("Rating", i.ParamsReaction.GetValueOrDefault("Rating"));
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
+                if (Current == i.ParamsReaction.GetValueOrDefault("Rating"))
+                {
+                    var response = await _httpClient.PostAsJsonAsync("youtube/v3/video/rate", new RatingContent
+                    {
+                        id = i.ParamsReaction.GetValueOrDefault("VideoId"),
+                        rating = i.ParamsReaction.GetValueOrDefault("Rating")
+                    });
+                    temp.Data.Remove("Rating");
+                    temp.Data.Add("Rating", "none");
+                    _arService.Update(temp, i.UserId);
+                    return true;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
+        return false;
     }
 }

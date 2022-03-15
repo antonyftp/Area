@@ -33,17 +33,16 @@ export interface IUserActionsReactions {
 }
 
 export default function Home() {
-    const {currentUser, setCurrentUser} = useAuth()
+    const {currentUser, setCurrentUser, user, fetchActionsReactions} = useAuth()
     const [actionsReactions, setActionsReactions] = useState(null as Nullable<IActionsReactions[]>)
     const [actionReaction, setActionReaction] = useState(null as Nullable<IActionsReactions>)
-    const {user, fetchActionsReactions} = useAuth()
 
     useEffect( () => {
         (async () => {
             try {
                 setActionsReactions(await fetchActionsReactions())
             } catch (e) {
-                console.log(e)
+                console.error(e)
             }
         })()
     },[]);
@@ -53,11 +52,13 @@ export default function Home() {
             <Header/>
             <AddArea actionReaction={actionReaction} setActionReaction={(newActionReaction) => {setActionReaction(newActionReaction)}} actionsReactions={actionsReactions} setActionsReactions={(newActionsReactions) => {setActionsReactions(newActionsReactions)}}/>
             <Box sx={{width: "95%", marginLeft: "auto", marginRight: "auto", display: "flex", flexWrap: "wrap"}}>
-                {actionsReactions !== null && actionsReactions.map((item, idx) => (
+                {actionsReactions !== null && actionsReactions !== undefined && actionsReactions.map((item, idx) => (
                     <Box key={idx+1} sx={{display: "flex", flexWrap: "wrap", flexDirection: 'column', background: colors.DarkGray, width: "250px", height: "250px", borderRadius: "15px", margin: "10px", justifyContent: "center", alignItems: "center", cursor: "pointer"}} onClick={() => {
                         setActionReaction(item)
                     }}>
-                        <Typography sx={{color: colors.White, fontSize: "24px", fontWeight: "bold"}}>{item.name}</Typography>
+                        <Box sx={{width: "230px"}}>
+                            <Typography sx={{color: colors.White, fontSize: "24px", fontWeight: "bold", wordWrap: "break-word", textAlign: "center"}}>{item.name}</Typography>
+                        </Box>
                         <Typography sx={{color: colors.White}}>{item.actionService}/{item.reactionService}</Typography>
                     </Box>
                 ))}

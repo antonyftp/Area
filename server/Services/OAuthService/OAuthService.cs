@@ -57,6 +57,11 @@ public class OAuthService
                     throw new Exception(Message.NOT_LOGGED_TO_GOOGLE);
                 _googleService.AddActionReaction(actionReaction);
                 break;
+            case "Youtube":
+                GoogleOAuth? youtubeOAuth = user.GoogleOAuth;
+                if (youtubeOAuth == null)
+                    throw new Exception(Message.NOT_LOGGED_TO_GOOGLE);
+                break;
             case "Discord":
                 DiscordOAuth? discordOAuth = user.DiscordOAuth;
                 if (discordOAuth == null)
@@ -91,9 +96,14 @@ public class OAuthService
                     throw new Exception(Message.NOT_LOGGED_TO_GITHUB);
                 _githubService.RemoveActionReaction(user.GithubOAuth.username, actionReaction);
                 break;
-            case "Google":
-                GoogleOAuth? googleOAuth = user.GoogleOAuth;
-                if (googleOAuth == null)
+            case "Gmail":
+                GoogleOAuth? gmailOAuth = user.GoogleOAuth;
+                if (gmailOAuth == null)
+                    throw new Exception(Message.NOT_LOGGED_TO_GOOGLE);
+                break;
+            case "Youtube":
+                GoogleOAuth? youtubeOAuth = user.GoogleOAuth;
+                if (youtubeOAuth == null)
                     throw new Exception(Message.NOT_LOGGED_TO_GOOGLE);
                 break;
             case "Discord":

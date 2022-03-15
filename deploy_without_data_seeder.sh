@@ -1,1 +1,1 @@
-docker-compose build react dotnet mobile mongodb && docker-compose up react dotnet mobile mongodb
+docker-compose build react dotnet mobile mongodb worker && docker-compose up react dotnet mobile mongodb worker

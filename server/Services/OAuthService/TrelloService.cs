@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using Area.Controllers;
 using Area.Database;
 using Area.Models;
 using Area.Utils;
@@ -13,12 +14,14 @@ public class TrelloService
     private readonly UserService _userService;
     private readonly WebhooksSettings _webhooksSettings;
     private readonly HttpClient _httpClient;
+    private readonly ActionReactionService _actionReactionService;
     
-    public TrelloService(IOptionsMonitor<OAuthSettings> oauthSettings, UserService userService, IOptions<WebhooksSettings> webhooksSettings)
+    public TrelloService(IOptionsMonitor<OAuthSettings> oauthSettings, UserService userService, IOptions<WebhooksSettings> webhooksSettings, ActionReactionService actionReactionService)
     {
         _trelloCredentials = oauthSettings.Get(OAuthSettings.Trello);
         _userService = userService;
         _webhooksSettings = webhooksSettings.Value;
+        _actionReactionService = actionReactionService;
         _httpClient = new HttpClient();
         _httpClient.BaseAddress = new Uri($"https://api.trello.com/1/");
         _httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -39,8 +42,6 @@ public class TrelloService
     {
         try {
             User user = _userService.GetCurrentUser()!;
-            Console.WriteLine(user.TrelloOAuth.accessToken);
-            Console.WriteLine(_trelloCredentials.ClientId);
             HttpResponseMessage response = await _httpClient.PostAsJsonAsync($"tokens/{user.TrelloOAuth.accessToken}/webhooks/?key={_trelloCredentials.ClientId}", new {
                     callbackURL = _webhooksSettings.ServerBaseUrl + callbackUrl,
                     idModel = modelId,
@@ -51,7 +52,6 @@ public class TrelloService
             Console.WriteLine(e.Message);
             throw new Exception("Failed to create webhooks");
         }
-        // actionReaction.Data.Add("hookId", res.Id.ToString());
     }
 
     public async void CreateNewBoard(Dictionary<string, string> parameters, User user)
@@ -82,14 +82,39 @@ public class TrelloService
     {
         if (actionReaction.ParamsAction == null)
             throw new BadHttpRequestException("invalid parameters");
-        switch (actionReaction.Action) {
-            // case "OnBoardUpdate": CreateWebhooks("/Trello/OnBoardUpdate", actionReaction.ParamsAction["boardId"], actionReaction.ParamsAction["description"], actionReaction); break;
-            // case "OnCardUpdate": CreateWebhooks("/Trello/OnCardUpdate", actionReaction.ParamsAction["boardId"], actionReaction.ParamsAction["description"], actionReaction); break;
-        }
+        switch (actionReaction.Action) { }
     }
     
     public void RemoveActionReaction(ActionReaction actionReaction)
     {
         
+    }
+
+    public class Card
+    {
+        public string id { get; set; }
+        public bool closed { get; set; }
+        public string name { get; set; }
+    }
+
+    public async Task<int> OnCardCreated(ActionReaction actionReaction, User user)
+    {
+        string listId = actionReaction.ParamsAction["ListId"];
+        var res = await _httpClient.GetAsync($"/1/lists/{listId}/cards/?key={_trelloCredentials.ClientId}&token={user.TrelloOAuth.accessToken}&fields=all");
+        List<Card> response = res.Content.ReadAsAsync<List<Card>>().Result;
+        var data = actionReaction.Data ?? new Dictionary<string, string>();
+        var cards  = System.Text.Json.JsonSerializer.Serialize(response);
+        List<Card> currentCards = actionReaction.Data.ContainsKey("cards") ? System.Text.Json.JsonSerializer.Deserialize<List<Card>>(actionReaction.Data["cards"]) : new List<Card>();
+        int diff = response.Count != currentCards.Count ? response.Count - currentCards.Count : 0;
+        data.Remove("cards");
+        data.Add("cards", cards);
+        _actionReactionService.Update(new UpdateActionReactionToUserBody() {
+            Data = data,
+            Name = actionReaction.Name,
+            ParamsAction = actionReaction.ParamsAction,
+            ParamsReaction = actionReaction.ParamsReaction,
+            ActionReactionId = actionReaction.Id
+        }, user.Id);
+        return diff;
     }
 }

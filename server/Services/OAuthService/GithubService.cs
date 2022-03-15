@@ -20,6 +20,7 @@ public class GithubService : Service
     {
         OAuth? oauth = user.GithubOAuth;
         if (oauth != null) {
+            Debug.WriteJson(oauth);
             var credentials = new Credentials(oauth.accessToken);
             var connection = new Connection(new Octokit.ProductHeaderValue("AreaServerGithubClient")) {
                 Credentials = credentials
@@ -80,7 +81,7 @@ public class GithubService : Service
             User user = _userService.GetCurrentUser()!;
             var config = new Dictionary<string, string>
             {
-                { "url", $"{_webhooksSettings.ServerBaseUrl}/Github/{whEvent}"},
+                { "url", $"{_webhooksSettings.ServerBaseUrl}Github/{whEvent}"},
                 { "content_type", "json" },
                 { "secret", "super secret"},
             };

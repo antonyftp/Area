@@ -78,18 +78,20 @@ public class DailymotionService
         _userService.SetDailymotionOAuthData((string)user["id"]);
     }
     
-    private async void CreateWebhooks(string event_, ActionReaction actionReaction)
+    private async Task CreateWebhooks(string event_, ActionReaction actionReaction)
     {
         try {
             User user = _userService.GetCurrentUser()!;
             Console.WriteLine(user.DailymotionOAuth.id);
             actionReaction.Data.Add("owner_id", user.DailymotionOAuth.id);
             actionReaction.Data.Add("event", event_);
+            Console.WriteLine($"{_webhooksSettings.ServerBaseUrl}Dailymotion/{event_}");
             var res = await _httpClient.PostAsJsonAsync("/me", new {
-                webhook_url = $"{_webhooksSettings.ServerBaseUrl}/Dailymotion/{event_}",
+                webhook_url = $"{_webhooksSettings.ServerBaseUrl}Dailymotion/{event_}",
                 webhook_events = event_,
                 fields = "id,screenname,webhook_url,webhook_events"
             });
+            Debug.WriteJson(res);
         } catch (Octokit.ApiValidationException e) {
             throw new Exception("Failed to create webhooks");
         }        
@@ -100,10 +102,10 @@ public class DailymotionService
         if (false)
             throw new BadHttpRequestException("invalid parameters");
         switch (actionReaction.Action) {
-            case "VideoPublished": CreateWebhooks("video.published", actionReaction); break;
-            case "VideoCreated": CreateWebhooks("video.created", actionReaction); break;
-            case "VideoDeleted": CreateWebhooks("video.deleted", actionReaction); break;
-            case "VideoReady": CreateWebhooks("video.format.ready", actionReaction); break;
+            case "VideoPublished": CreateWebhooks("video.published", actionReaction).Wait(); break;
+            case "VideoCreated": CreateWebhooks("video.created", actionReaction).Wait(); break;
+            case "VideoDeleted": CreateWebhooks("video.deleted", actionReaction).Wait(); break;
+            case "VideoReady": CreateWebhooks("video.format.ready", actionReaction).Wait(); break;
         }
     }
 

@@ -21,6 +21,7 @@ public class ReactionService
     
     public void ReactionFromAction(User user, ActionReaction actionReaction, Dictionary<string, string>? variables = null)
     {
+        Console.WriteLine("test");
         var action = _serviceService.GetAction(actionReaction.ActionService, actionReaction.Action);
         if (variables != null && action.Variables != null) {
             var list = new Dictionary<string, string>();
@@ -42,7 +43,14 @@ public class ReactionService
                 if (actionReaction.Reaction == "SendEmail")
                     _googleService.SendMail(actionReaction, user);
                 break;
-            case "Trello":
+            case "Youtube":
+                if (user.GoogleOAuth == null)
+                    throw new Exception(Message.NOT_LOGGED_TO_GOOGLE);
+                _googleService.SetClientCredentials(user);
+                if (actionReaction.Reaction == "PutRate")
+                    _googleService.putRate(actionReaction);
+                break;
+                    case "Trello":
                 if (user.TrelloOAuth == null)
                     throw new Exception(Message.NOT_LOGGED_TO_TRELLO);
                 if (actionReaction.Reaction == "CreateBoard")

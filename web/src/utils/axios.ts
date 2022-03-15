@@ -1,27 +1,28 @@
 import axios from "axios";
-// import {setEndpoint, getEndpoint} from "./localStorage";
+import env from "react-dotenv"
+import {setEndpoint, getEndpoint} from "./localStorage";
 
-// const getIt = () : string => {
-//     try {
-//         if (getEndpoint().endpoint === null || getEndpoint().endpoint === undefined) {
-//             if (process.env.REACT_APP_BASE_URL !== undefined) {
-//                 setEndpoint({endpoint: process.env.REACT_APP_BASE_URL.toString()})
-//                 return process.env.REACT_APP_BASE_URL.toString()
-//             }
-//         } else {
-//             return getEndpoint().endpoint
-//         }
-//     } catch(err) {
-//         if (process.env.REACT_APP_BASE_URL !== undefined)
-//             return process.env.REACT_APP_BASE_URL.toString()
-//     }
-//     return "error"
-// }
+const getIt = () : string => {
+    try {
+        if (getEndpoint().endpoint === null || getEndpoint().endpoint === undefined) {
+            if (env.BASE_URL !== undefined) {
+                setEndpoint({endpoint: env.BASE_URL.toString()})
+                return env.BASE_URL.toString()
+            }
+        } else {
+            return getEndpoint().endpoint
+        }
+    } catch(err) {
+        if (env.BASE_URL !== undefined)
+            return env.BASE_URL.toString()
+    }
+    return "http://error:8080"
+}
 
 // export const axiosInstance = axios.create({
 //     baseURL: "http://localhost:8080"
 // })
 
 export const axiosInstance = axios.create({
-    baseURL: "http://localhost:8080/"
+    baseURL: getIt()
 })

@@ -4,6 +4,7 @@ import {getEndpoint, getUser, resetUser, setEndpoint, setUser} from "../utils/lo
 import {Nullable} from "../utils/nullable";
 import {axiosInstance} from "../utils/axios";
 import { Url } from "../utils/url";
+import env from "react-dotenv"
 
 interface IUser {
     name: string,
@@ -11,7 +12,6 @@ interface IUser {
     token: string,
     id: string,
     githubConnected: boolean
-    discordConnected: boolean
     googleConnected: boolean
     trelloConnected: boolean
     dailymotionConnected: boolean
@@ -30,7 +30,6 @@ const AuthContext = createContext(undefined as any);
 export enum EOAuth {
     Github = "Github",
     Google = "Google",
-    Discord = "Discord",
     Dailymotion = "Dailymotion",
     Trello = "Trello"
 }
@@ -45,7 +44,6 @@ type ProviderAuthT = {
     changeEndpoint: (newEndpoint: string) => Promise<AxiosResponse<any>>;
     signinWithGoogle: (email: string, name: string, access_token: string) => Promise<AxiosResponse<any>>;
     github: (code: string) => Promise<AxiosResponse<any>>;
-    discord: (code: string) => Promise<AxiosResponse<any>>;
     trello: (code: string) => Promise<AxiosResponse<any>>;
     dailymotion: (code: string) => Promise<AxiosResponse<any>>;
     google: (access_token: string) => Promise<AxiosResponse<any>>;
@@ -56,7 +54,6 @@ type ProviderAuthT = {
     update: (id: string, name: string, actionParams: object, reactionParams: object) => Promise<AxiosResponse<any>>;
     remove: (id: string) => Promise<AxiosResponse<any>>;
     githubAuthorize: () => Promise<AxiosResponse<any>>;
-    discordAuthorize: () => Promise<AxiosResponse<any>>;
     googleAuthorize: () => Promise<AxiosResponse<any>>;
     trelloAuthorize: () => Promise<AxiosResponse<any>>;
     dailymotionAuthorize: () => Promise<AxiosResponse<any>>;
@@ -78,20 +75,21 @@ export const AuthProvider = (props: IProps) => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (Url.getPathName() == "/signin" || Url.getPathName() == "/signup") {
-            if (currentUser) {
+        if (Url.getPathName() == "/about.json")
+            Url.replacePathName("/about.json")
+        else if (Url.getPathName() == "/signin" || Url.getPathName() == "/signup")
+            if (currentUser)
                 Url.replacePathName("/")
-            }
-        } else {
-            if (!currentUser) {
+        else
+            if (!currentUser)
                 Url.replacePathName("/signin")
-            }
-        }
     }, [currentUser])
 
     const signin = async (email: string, password: string) => {
         const res = await axiosInstance.post("Authentication/login", {email, password});
         setUserFromBack(res.data.user, res.data.token)
+        if (env.BASE_URL !== null && env.BASE_URL !== undefined)
+            setEndpoint(env.BASE_URL)
     };
 
 
@@ -102,6 +100,8 @@ export const AuthProvider = (props: IProps) => {
             access_token
         });
         setUserFromBack(res.data.user, res.data.token)
+        if (env.BASE_URL !== null && env.BASE_URL !== undefined)
+            setEndpoint(env.BASE_URL)
     }
 
     const signup = async (email: string, password: string, name: string) => {
@@ -124,6 +124,7 @@ export const AuthProvider = (props: IProps) => {
             const user = {...currentUser, [`${name.toLowerCase()}Connected`]: false } as User
             setCurrentUser(user);
             setUser(user);
+            window.location.replace("/profile?status"+name.toLowerCase()+"=unlinked")
         } catch (e) {
             console.error(e)
         }
@@ -145,21 +146,6 @@ export const AuthProvider = (props: IProps) => {
             window.location.replace("/profile?statusgithub=ok")
         } catch (error) {
             window.location.replace("/profile?statusgithub=ko")
-            console.error(error);
-        }
-    };
-
-    const discord = async (code: string) => {
-        try {
-            const response = await axiosInstance.post("OAuth/getDiscordAccessToken", code, {
-                headers: {
-                    "Authorization": `Bearer ${currentUser!.token}`,
-                    "Content-Type": "application/json"
-                }
-            });
-            window.location.replace("/profile?statusdiscord=ok")
-        } catch (error) {
-            window.location.replace("/profile?statusdiscord=ko")
             console.error(error);
         }
     };
@@ -224,7 +210,6 @@ export const AuthProvider = (props: IProps) => {
             email: data.email,
             id: data.id,
             githubConnected: data.githubOAuth !== null,
-            discordConnected: data.discordOAuth !== null,
             googleConnected: data.googleOAuth !== null,
             trelloConnected: data.trelloOAuth !== null,
             dailymotionConnected: data.dailymotionOAuth !== null
@@ -323,18 +308,6 @@ export const AuthProvider = (props: IProps) => {
         }
     }
 
-    const discordAuthorize = async () => {
-        try {
-            return axiosInstance.get("/OAuth/getDiscordAuthorizeUrl", {
-                headers: {
-                    "Authorization": `Bearer ${currentUser!.token}`
-                }
-            });
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
     const googleAuthorize = async () => {
         try {
             return axiosInstance.get("/OAuth/getGoogleCredentials", {
@@ -380,12 +353,10 @@ export const AuthProvider = (props: IProps) => {
         changeEndpoint,
         signin,
         githubAuthorize,
-        discordAuthorize,
         googleAuthorize,
         trelloAuthorize,
         dailymotionAuthorize,
         github,
-        discord,
         trello,
         dailymotion,
         google,

@@ -37,6 +37,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.Configure<DatabaseSettings>(configuration.GetSection(DatabaseSettings.DatabaseSettingsSection));
+builder.Services.Configure<WeatherSettings>(configuration.GetSection("Weather"));
 builder.Services.Configure<WebhooksSettings>(configuration.GetSection(WebhooksSettings.Section));
 builder.Services.Configure<OAuthSettings>(OAuthSettings.Github, configuration.GetSection("OAuth:" + OAuthSettings.Github));
 builder.Services.Configure<OAuthSettings>(OAuthSettings.Google, configuration.GetSection("OAuth:" + OAuthSettings.Google));

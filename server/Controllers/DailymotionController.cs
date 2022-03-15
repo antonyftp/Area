@@ -25,6 +25,7 @@ public class DailymotionController : Controller
     [HttpPost("video.published")]
     public async Task<ActionResult> VideoPublished()
     {
+        Console.WriteLine("video.published");
         using (var reader = new StreamReader(Request.Body))
         {
             var txt = await reader.ReadToEndAsync();
@@ -39,6 +40,7 @@ public class DailymotionController : Controller
     [HttpPost("video.created")]
     public async Task<ActionResult> VideoCreated()
     {
+        Console.WriteLine("video.created");
         using (var reader = new StreamReader(Request.Body))
         {
             var txt = await reader.ReadToEndAsync();
@@ -53,6 +55,7 @@ public class DailymotionController : Controller
     [HttpPost("video.deleted")]
     public async Task<ActionResult> VideoDeleted()
     {
+        Console.WriteLine("video.deleted");
         using (var reader = new StreamReader(Request.Body))
         {
             var txt = await reader.ReadToEndAsync();
@@ -67,6 +70,7 @@ public class DailymotionController : Controller
     [HttpPost("video.format.ready")]
     public async Task<ActionResult> VideoFormatReady()
     {
+        Console.WriteLine("video.format.ready");
         using (var reader = new StreamReader(Request.Body))
         {
             var txt = await reader.ReadToEndAsync();

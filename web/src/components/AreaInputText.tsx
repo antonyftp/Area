@@ -17,6 +17,7 @@ interface IProps {
     marginTop?: string
     marginLeft?: string
     marginRight?: string
+    maxCharacters?: number
 }
 
 export default function AreaInputText(props: IProps) {
@@ -28,6 +29,6 @@ export default function AreaInputText(props: IProps) {
     const [value, setValue] = useState(props.value)
 
     return (
-        <TextField sx={{fontFamily: "Montserrat", marginBottom: props.marginBottom, marginTop: props.marginTop ,marginLeft: props.marginLeft, marginRight: props.marginRight, width: width, backgroundColor: backgroundColor, borderRadius: radius, border: "none"}} InputLabelProps={{style: {color: colors.White, fontFamily: 'Montserrat'}}} value={value} label={props.label} placeholder={props.placeholder} inputProps={{style: {fontFamily: 'montserrat', color: color, backgroundColor: backgroundColor, width: width, height: height, borderRadius: radius, border: "none"}}} onChange={(e) => {props.onChange(e.target.value); setValue(e.target.value)}}/>
+        <TextField sx={{fontFamily: "Montserrat", marginBottom: props.marginBottom, marginTop: props.marginTop ,marginLeft: props.marginLeft, marginRight: props.marginRight, width: width, backgroundColor: backgroundColor, borderRadius: radius, border: "none"}} InputLabelProps={{style: {color: colors.White, fontFamily: 'Montserrat'}}} value={value} label={props.label} placeholder={props.placeholder} inputProps={{maxlength: props.maxCharacters, style: {fontFamily: 'montserrat', color: color, backgroundColor: backgroundColor, width: width, height: height, borderRadius: radius, border: "none"}}} onChange={(e) => {props.onChange(e.target.value); setValue(e.target.value)}}/>
     );
 }

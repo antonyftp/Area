@@ -79,5 +79,4 @@ public class User
 
     [BsonElement("dailymotionOAuth")] 
     public DailymotionOAuth? DailymotionOAuth { get; set; } = null;
-
 }

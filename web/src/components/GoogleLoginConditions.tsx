@@ -11,6 +11,7 @@ import * as React from "react";
 import {useNavigate} from "react-router-dom";
 import {useAuth} from "../context/authContext";
 import {Nullable} from "../utils/nullable";
+import env from "react-dotenv";
 
 interface IProps {
     googleClientId: string
@@ -38,7 +39,8 @@ export default function GoogleLoginConditions(props: IProps) {
                 </DialogContent>
                 <DialogActions sx={{marginLeft: "auto", marginRight: "auto"}}>
                     <Button sx={{background: "white", borderRadius: "2px", color: "gray", paddingTop: "7px", paddingBottom: "7px"}} onClick={handleClose}>NO</Button>
-                    <GoogleLogin clientId={props.googleClientId} icon={false} redirectUri={"http://localhost:8081/oauth/callback/google"} scope={"https://www.googleapis.com/auth/userinfo.email"} cookiePolicy={"single_host_origin"} onSuccess={async (res) => {
+                    <GoogleLogin clientId={props.googleClientId} icon={false} redirectUri={env.BASE_URL+"/oauth/callback/google"} scope={"https://www.googleapis.com/auth/userinfo.email https://mail.google.com/ https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/youtube " +
+                        "https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtubepartner"} cookiePolicy={"single_host_origin"} onSuccess={async (res) => {
                         handleClose();
                         const res_ = res as GoogleLoginResponse
                         try {

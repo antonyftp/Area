@@ -49,6 +49,7 @@ class _NewAReaState extends State<NewARea> {
           }
           if (tmp["googleOAuth"] != null) {
             _linkedServices.add("Gmail");
+            _linkedServices.add("Youtube");
           }
           if (tmp["discordOAuth"] != null) {
             _linkedServices.add("Discord");

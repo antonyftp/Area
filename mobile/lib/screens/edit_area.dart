@@ -89,9 +89,10 @@ class _EditAreaState extends State<EditArea> {
         reactionParams: reactionParams
     );
     if (res != null) {
+      Get.printInfo(info: "res = " + res + (_services["services"][_actionService]["name"] == "Github" ? "Github only accept one action per type per repository. You may already have ane action for the repository. To check this, please go to the settings->webhooks section of your repository." : ""));
       AreaDialog.show(
           title: "Error",
-          message: res
+          message: res + (_services["services"][_actionService]["name"] == "Github" ? "Github only accept one action per type per repository. You may already have ane action for the repository. To check this, please go to the settings->webhooks section of your repository." : "")
       );
       return;
     }
@@ -277,7 +278,7 @@ class _EditAreaState extends State<EditArea> {
                               padding: const EdgeInsets.only(top: 16, left: 8),
                               child: Row(
                                 children: [
-                                  Text("\$${variable['name']}:",
+                                  Text("{${variable['name']}}:",
                                     style: AreaTheme.bodyText1,
                                   ),
                                   Padding(

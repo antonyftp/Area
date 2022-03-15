@@ -33,7 +33,7 @@ class BackendController {
         return null;
       } else {
         Get.printInfo(info: "[BackendController - signInWithOauth] Post code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-        return jsonDecode(r.body)["errors"].toString();
+        return r.body.toString();
       }
     })
         .catchError((e) {
@@ -110,7 +110,7 @@ class BackendController {
             return await signIn(email: email, password: password);
           } else {
             Get.printInfo(info: "[BackendController - signUp] Post code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-            return jsonDecode(r.body)["errors"].toString();
+            return r.body.toString();
           }
     })
     .catchError((e) {
@@ -144,7 +144,7 @@ class BackendController {
             return null;
           } else {
             Get.printInfo(info: "[BackendController - updateArea] Post code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-            return jsonDecode(r.body)["errors"].toString();
+            return r.body.toString();
           }
     })
         .catchError((e) {
@@ -184,7 +184,7 @@ class BackendController {
           return null;
         } else {
           Get.printInfo(info: "[BackendController - createArea] Post code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-          return jsonDecode(r.body)["errors"].toString();
+          return r.body.toString();
         }}).catchError((e) {
           Get.printInfo(info: "[BackendController - createArea] catchError\nError: " + e.toString());
           return e.toString();
@@ -219,7 +219,7 @@ class BackendController {
             return null;
           } else {
             Get.printInfo(info: "[BackendController - deleteArea] Post code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-            return jsonDecode(r.body)["errors"].toString();
+            return r.body.toString();
           }
     })
         .catchError((e) {
@@ -266,7 +266,7 @@ class BackendController {
             return null;
           } else {
             Get.printInfo(info: "[BackendController - sendGithubCode] Post code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-            return jsonDecode(r.body)["errors"].toString();
+            return r.body.toString();
           }
     })
         .catchError((e) {
@@ -334,7 +334,7 @@ class BackendController {
         return null;
       } else {
         Get.printInfo(info: "[BackendController - storeGoogleCode] Post code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-        return jsonDecode(r.body)["errors"].toString();
+        return r.body.toString();
       }
     })
         .catchError((e) {
@@ -356,7 +356,7 @@ class BackendController {
         return null;
       } else {
         Get.printInfo(info: "[BackendController - unlinkGithub] Post code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-        return jsonDecode(r.body)["errors"].toString();
+        return r.body.toString();
       }
     }).catchError((e) {
       Get.printInfo(info: "[BackendController - unlinkGithub] catchError\nError: " + e.toString());
@@ -377,7 +377,7 @@ class BackendController {
         return null;
       } else {
         Get.printInfo(info: "[BackendController - unlinkGoogle] Post code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-        return jsonDecode(r.body)["errors"].toString();
+        return r.body.toString();
       }
     }).catchError((e) {
       Get.printInfo(info: "[BackendController - unlinkGoogle] catchError\nError: " + e.toString());
@@ -421,7 +421,7 @@ class BackendController {
         return null;
       } else {
         Get.printInfo(info: "[BackendController - postTrelloUrl] Post code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-        return jsonDecode(r.body)["errors"].toString();
+        return r.body.toString();
       }
     }).catchError((e) {
       Get.printInfo(info: "[BackendController - postTrelloUrl] catchError\nError: " + e.toString());
@@ -465,7 +465,7 @@ class BackendController {
         return null;
       } else {
         Get.printInfo(info: "[BackendController - postDaylimotionCode] Post code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-        return jsonDecode(r.body)["errors"].toString();
+        return r.body.toString();
       }
     }).catchError((e) {
       Get.printInfo(info: "[BackendController - postDaylimotionCode] catchError\nError: " + e.toString());
@@ -486,7 +486,7 @@ class BackendController {
         return null;
       } else {
         Get.printInfo(info: "[BackendController - unlinkDailymotion] Delete code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-        return jsonDecode(r.body)["errors"].toString();
+        return r.body.toString();
       }
     }).catchError((e) {
       Get.printInfo(info: "[BackendController - unlinkDailymotion] catchError\nError: " + e.toString());
@@ -507,7 +507,7 @@ class BackendController {
         return null;
       } else {
         Get.printInfo(info: "[BackendController - unlinkTrello] Delete code ${r.statusCode} (failure)\nBody: " + r.body.toString());
-        return jsonDecode(r.body)["errors"].toString();
+        return r.body.toString();
       }
     }).catchError((e) {
       Get.printInfo(info: "[BackendController - unlinkTrello] catchError\nError: " + e.toString());
